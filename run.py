@@ -1,21 +1,21 @@
 import asyncio
 from pathlib import Path
 
-from graphnote.client import GraphRunner
-from graphnote.dag import cells
+import jupyter_client
 
-CELL_DIR = Path(__file__).parent / "cells"
+import test_dag
+from graphnote.dag.runner import GraphRunner
+
+KERNEL_SPEC_DIR = Path("/Users/aimilioshatzistamou/Library/Jupyter/runtime/")
+
+client = jupyter_client.BlockingKernelClient()
+client.load_connection_file(str(KERNEL_SPEC_DIR / "kernel-95354.json"))
+client.start_channels()
 
 
 async def main():
-    dag = [
-        cells.Cell(CELL_DIR / "node_root.py"),
-        cells.Cell(CELL_DIR / "node_data.py"),
-        cells.Cell(CELL_DIR / "node_trainer.py"),
-        cells.Cell(CELL_DIR / "node_visualize.py"),
-    ]
-
-    runner = GraphRunner(dag)
+    runner = GraphRunner(client, test_dag.test_graph)
+    await runner.init_kernel()
     await runner.run_dag_in_order()
 
 

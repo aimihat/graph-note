@@ -3,46 +3,45 @@ import pathlib
 import re
 from typing import List, Optional, Set, Tuple
 
+from graphnote.dag.code_manager import CodeHandler
+
 INPUT_VAR_TAG = "INPUT"
 OUTPUT_VAR_TAG = "OUTPUT"
 
 
-class CodeHandler:
-    """Helper class for parsing and transforming cell code."""
+CellUID = str
 
-    def indent_code(self, code: str) -> str:
-        """Indents a code snippet by a tab"""
-        return "\n".join(f"\t{line}" for line in code.splitlines())
 
-    def parse_tag(self, code: str, tag: str) -> Tuple[Set[str], str]:
-        """Parses an input reference formatted as `Input["example_tag"]`"""
-        pattern = rf"{tag}\[\"([a-zA-Z0-9_]+)\"\]"
-        matches = set(re.findall(pattern, code))
+@dataclasses.dataclass
+class Port:
+    cell_uid: CellUID
+    name: str
 
-        for ref in matches:
-            code = code.replace(f'{tag}["{ref}"]', ref)
 
-        return matches, code
+@dataclasses.dataclass
+class Connection:
+    from_port: Port
+    to_port: Port
 
 
 @dataclasses.dataclass
 class Cell:
     filepath: str
-    id: str
+    uid: CellUID
     input_vars: Optional[set]
     output_vars: Optional[set]
     compiled_code: Optional[str]
 
     def __init__(self, filepath: str) -> None:
         self.filepath = filepath
-        self.id = pathlib.Path(filepath).stem
+        self.uid = pathlib.Path(filepath).stem
         self.code_handler = CodeHandler()
 
     def load_code(self) -> str:
         with open(self.filepath, "r") as f:
             return f.read()
 
-    def compile(self):
+    def compile(self):  # TODO: move this to be called in the runner
         raw_code = self.load_code()
 
         # Detect required inputs
@@ -51,10 +50,25 @@ class Cell:
 
         # Wrap cell in a function scope
         func_args = ", ".join(self.input_vars)
-        func_header = f"def {self.id}({func_args}):"
+        func_header = f"def {self.uid}({func_args}):"
         indented_code = self.code_handler.indent_code(raw_code)
 
         self.compiled_code = f"{func_header}\n{indented_code}"
 
-        # TODO: no dag yet
-        self.compiled_code = self.compiled_code + f"\n{self.id}({func_args})"
+        in_from_recorded_outs = [f"CELL_OUTPUTS['{in_}']" for in_ in self.input_vars]
+        call_args = ",".join(in_from_recorded_outs)
+        self.compiled_code = self.compiled_code + f"\n{self.uid}({call_args})"
+
+
+@dataclasses.dataclass
+class Root:
+    filepath: str
+    code: str
+
+    def __init__(self, filepath: str) -> None:
+        self.filepath = filepath
+        self.code = self.load_code()
+
+    def load_code(self) -> str:
+        with open(self.filepath, "r") as f:
+            return f.read()
