@@ -1,18 +1,18 @@
 syntax = "proto3";
 
 message Port {
-  required string uid = 1;
-  required string name = 2;
+  string uid = 1;
+  string name = 2;
 }
 
 message Connection {
-  required Port from = 1;
-  required Port to = 2;
+  Port from = 1;
+  Port to = 2;
 }
 
 message Cell {
-  required string uid = 1;
-  required string code = 2;
+  string uid = 1;
+  string code = 2;
 
   // Cell ins/outs are updated whenever a cell is compiled.
   repeated Port in_ports = 3;
@@ -22,7 +22,7 @@ message Cell {
 }
 
 message Graph {
-  required Cell root = 1;
+  Cell root = 1;
   repeated Cell cells = 2;
   repeated Connection connections = 3;
 }
