@@ -1,0 +1,65 @@
+
+Å
+	cell_root·import matplotlib.pyplot as plt
+# Import datasets, classifiers and performance metrics
+from sklearn import datasets, metrics, svm
+from sklearn.model_selection import train_test_split
+}
+	cell_dataSdigits = datasets.load_digits()
+
+graphnote.out({"digits__different_name": digits})
+"
+1digits__different_nameý
+cell_trainerö# flatten the images
+n_samples = len(INPUT["digits"].images)
+data = digits.images.reshape((n_samples, -1))
+
+# Create a classifier: a support vector classifier
+clf = svm.SVC(gamma=0.001)
+
+# Split data into 50% train and 50% test subsets
+X_train, X_test, y_train, y_test = train_test_split(
+    data, digits.target, test_size=0.5, shuffle=False
+)
+
+# Learn the digits on the train subset
+clf.fit(X_train, y_train)
+
+# Predict the value of the digit on the test subset
+predicted = clf.predict(X_test)
+
+graphnote.out(
+    {
+        "predicted": predicted,
+        "clf": clf,
+        "X_test": X_test,
+        "y_test": y_test,
+    }
+)
+
+2digits
+7X_test
+8	predicted
+9y_test	
+10clf"
+3X_test"
+4	predicted"
+5y_test"
+6clf¸
+cell_visualize¥# Below we visualize the first 4 test samples and show their predicted digit value in the title.
+
+_, axes = plt.subplots(nrows=1, ncols=4, figsize=(10, 3))
+for ax, image, prediction in zip(axes, INPUT["X_test"], INPUT["predicted"]):
+    ax.set_axis_off()
+    image = image.reshape(8, 8)
+    ax.imshow(image, cmap=plt.cm.gray_r, interpolation="nearest")
+    ax.set_title(f"Prediction: {prediction}")
+
+print(
+    f'Classification report for classifier {INPUT["clf"]}:\n'
+    f'{metrics.classification_report(INPUT["y_test"], INPUT["predicted"])}\n'
+)
+*
+
+1digits__different_name
+2digits
