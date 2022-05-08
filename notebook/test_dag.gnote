@@ -1,6 +1,7 @@
 
-Å
-	cell_root·import matplotlib.pyplot as plt
+Æ
+	cell_root¸import matplotlib.pyplot as plt
+
 # Import datasets, classifiers and performance metrics
 from sklearn import datasets, metrics, svm
 from sklearn.model_selection import train_test_split
@@ -9,7 +10,7 @@ from sklearn.model_selection import train_test_split
 
 graphnote.out({"digits__different_name": digits})
 "
-1digits__different_nameý
+1digits__different_nameÈ
 cell_trainerö# flatten the images
 n_samples = len(INPUT["digits"].images)
 data = digits.images.reshape((n_samples, -1))
@@ -37,15 +38,11 @@ graphnote.out(
     }
 )
 
-2digits
-7X_test
-8	predicted
-9y_test	
-10clf"
+2digits"
 3X_test"
 4	predicted"
 5y_test"
-6clf¸
+6clfí
 cell_visualize¥# Below we visualize the first 4 test samples and show their predicted digit value in the title.
 
 _, axes = plt.subplots(nrows=1, ncols=4, figsize=(10, 3))
@@ -59,7 +56,23 @@ print(
     f'Classification report for classifier {INPUT["clf"]}:\n'
     f'{metrics.classification_report(INPUT["y_test"], INPUT["predicted"])}\n'
 )
-*
+
+7X_test
+8	predicted
+9y_test	
+10clf*
 
 1digits__different_name
-2digits
+2digits
+
+3X_test
+7X_test 
+
+4	predicted
+8	predicted
+
+5y_test
+9y_test
+
+6clf	
+10clf

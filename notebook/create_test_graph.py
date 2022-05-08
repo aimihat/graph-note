@@ -1,5 +1,7 @@
-from pathlib import Path
 import sys
+from pathlib import Path
+
+from google.protobuf.json_format import MessageToJson
 
 sys.path.append("../")
 from graphnote.proto.classes import graph_pb2
@@ -40,7 +42,7 @@ cell_trainer.out_ports.extend(
 cell_visualize = graph_pb2.Cell()
 cell_visualize.uid = "cell_visualize"
 cell_visualize.code = read_cell(CELL_DIR / "cell_visualize.py")
-cell_trainer.in_ports.extend(
+cell_visualize.in_ports.extend(
     [
         graph_pb2.Port(uid="7", name="X_test"),
         graph_pb2.Port(uid="8", name="predicted"),
@@ -56,7 +58,7 @@ connections = [
     ),
 ]
 for from_, to_ in zip(cell_trainer.out_ports, cell_visualize.in_ports):
-    connections.append(graph_pb2.Port(from_port=from_, to_port=to_))
+    connections.append(graph_pb2.Connection(from_port=from_, to_port=to_))
 
 # Create dag
 dag = graph_pb2.Graph()
@@ -67,4 +69,11 @@ dag.connections.extend(connections)
 # Write the new dag back to disk.
 f = open("test_dag.gnote", "wb")
 f.write(dag.SerializeToString())
+f.close()
+
+# For debugging purposes, save as json also
+
+json_obj = MessageToJson(dag)
+f = open("test_dag.json", "w")
+f.write(json_obj)
 f.close()
