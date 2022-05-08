@@ -1,15 +1,15 @@
 import enum
-from typing import Any
+from typing import Any, Dict, Optional
 
-from graphnote.message import defs
+from graphnote.execution.messages import definitions
 
 
 class HandledMessages(enum.Enum):
     stream = "stream"
 
 
-def parse_message(message: Any) -> defs.Message:
-    raw_message = defs.Message(
+def parse_message(message: Dict[str, Any]) -> definitions.Message:
+    raw_message = definitions.Message(
         header=message["header"],
         msg_id=message["msg_id"],
         msg_type=message["msg_type"],
@@ -23,7 +23,7 @@ def parse_message(message: Any) -> defs.Message:
     return raw_message  # no longer raw
 
 
-def parse_content(message: defs.Message):
+def parse_content(message: definitions.Message) -> Optional[definitions.Content]:
     handled_messages = set(item.value for item in HandledMessages)
 
     if message.msg_type not in handled_messages:
@@ -34,6 +34,12 @@ def parse_content(message: defs.Message):
     if message_type == message_type.stream:
         assert type(message.content) == dict
         if message.content["name"] == "stdout":
-            return defs.CellStdout(message.content["name"], message.content["text"])
+            return definitions.CellStdout(
+                message.content["name"], message.content["text"]
+            )
         elif message.content["name"] == "stderr":
-            return defs.CellStderr(message.content["name"], message.content["text"])
+            return definitions.CellStderr(
+                message.content["name"], message.content["text"]
+            )
+    else:
+        raise Exception("This shouldn't happen")

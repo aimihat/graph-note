@@ -9,10 +9,7 @@ class GraphNote:
 
     @classmethod
     def out(cls, outputs: Dict[str, Any]):
-        """Records the given cell output(s).
-
-        If a list of objects is passed, we assume that the output port names = variable names,
-        alternatively, can pass a dictionary mapping port name to objects."""
+        """Records the given cell output(s), taken as a dict from port names to objects."""
 
         if type(outputs) == dict:
             CELL_OUTPUTS.update(outputs)

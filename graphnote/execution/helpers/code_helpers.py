@@ -1,16 +1,17 @@
 import re
 from typing import Set
 
-from graphnote.execution.graph_helpers import INPUT_VAR_TAG
+from graphnote.execution.helpers.graph_helpers import INPUT_VAR_TAG
+from graphnote.proto.classes import graph_pb2
 
 
-def indent_code(self, code: str) -> str:
+def indent_code(code: str) -> str:
     """Indents a code snippet by a tab."""
 
     return "\n".join(f"\t{line}" for line in code.splitlines())
 
 
-def compile_cell(dag, cell):
+def compile_cell(dag: graph_pb2.Graph, cell: graph_pb2.Cell) -> str:
     """Compiles a validated cell into code that is ready to be executed."""
 
     inputs = [p.name for p in cell.in_ports]
@@ -30,7 +31,7 @@ def compile_cell(dag, cell):
     for conn in dag.connections:
         if conn.to_port.uid in in_port_uids:
             kwargs.append(f"{conn.to_port.name}=CELL_OUTPUTS['{conn.from_port.name}']")
-    function_call = f"cell.uid({','.join(kwargs)})"
+    function_call = f"{cell.uid}({','.join(kwargs)})"
 
     exec_code = f"{function}\n{function_call}"
     return exec_code

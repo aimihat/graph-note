@@ -1,5 +1,5 @@
 import dataclasses
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional, Union
 
 ### Types: Message Content ###
 
@@ -18,7 +18,7 @@ class CellStderr:
 
 RawContent = Dict[str, Any]
 
-Content = Union[RawContent, CellStdout, CellStderr]
+Content = Optional[Union[RawContent, CellStdout, CellStderr]]
 
 
 @dataclasses.dataclass

@@ -19,6 +19,9 @@ message Cell {
   repeated Port out_ports = 4;
 
   optional string output = 5;
+
+  // @future: last_executed;
+  // @future: last_execution_status; (success / failure)
 }
 
 message Graph {
