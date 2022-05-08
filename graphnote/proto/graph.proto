@@ -6,8 +6,8 @@ message Port {
 }
 
 message Connection {
-  Port from = 1;
-  Port to = 2;
+  Port from_port = 1;
+  Port to_port = 2;
 }
 
 message Cell {
