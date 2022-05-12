@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+message Port {
+  string uid = 1;
+  string name = 2;
+}
+
+message Connection {
+  Port from_port = 1;
+  Port to_port = 2;
+}
+
+message Cell {
+  string uid = 1;
+  string code = 2;
+
+  // Cell ins/outs are updated whenever a cell is compiled.
+  repeated Port in_ports = 3;
+  repeated Port out_ports = 4;
+
+  optional string output = 5;
+
+  // @future: last_executed;
+  // @future: last_execution_status; (success / failure)
+}
+
+message Graph {
+  Cell root = 1;
+  repeated Cell cells = 2;
+  repeated Connection connections = 3;
+}

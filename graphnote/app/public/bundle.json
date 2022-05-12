@@ -1,0 +1,82 @@
+{
+  "nested": {
+    "Port": {
+      "fields": {
+        "uid": {
+          "type": "string",
+          "id": 1
+        },
+        "name": {
+          "type": "string",
+          "id": 2
+        }
+      }
+    },
+    "Connection": {
+      "fields": {
+        "fromPort": {
+          "type": "Port",
+          "id": 1
+        },
+        "toPort": {
+          "type": "Port",
+          "id": 2
+        }
+      }
+    },
+    "Cell": {
+      "oneofs": {
+        "_output": {
+          "oneof": [
+            "output"
+          ]
+        }
+      },
+      "fields": {
+        "uid": {
+          "type": "string",
+          "id": 1
+        },
+        "code": {
+          "type": "string",
+          "id": 2
+        },
+        "inPorts": {
+          "rule": "repeated",
+          "type": "Port",
+          "id": 3
+        },
+        "outPorts": {
+          "rule": "repeated",
+          "type": "Port",
+          "id": 4
+        },
+        "output": {
+          "type": "string",
+          "id": 5,
+          "options": {
+            "proto3_optional": true
+          }
+        }
+      }
+    },
+    "Graph": {
+      "fields": {
+        "root": {
+          "type": "Cell",
+          "id": 1
+        },
+        "cells": {
+          "rule": "repeated",
+          "type": "Cell",
+          "id": 2
+        },
+        "connections": {
+          "rule": "repeated",
+          "type": "Connection",
+          "id": 3
+        }
+      }
+    }
+  }
+}
