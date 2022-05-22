@@ -4,7 +4,7 @@ from pathlib import Path
 from google.protobuf.json_format import MessageToJson
 
 sys.path.append("../")
-from graphnote.proto.classes import graph_pb2
+from src.proto.classes import graph_pb2
 
 CELL_DIR = Path(__file__).parent / "test_cells"
 
@@ -38,6 +38,7 @@ cell_trainer.out_ports.extend(
         graph_pb2.Port(uid="6", name="clf"),
     ]
 )
+cell_trainer.output = "This is the output for the trainer cell."
 
 cell_visualize = graph_pb2.Cell()
 cell_visualize.uid = "cell_visualize"
