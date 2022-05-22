@@ -1,7 +1,7 @@
 {
   "root": {
     "uid": "cell_root",
-    "code": "import matplotlib.pyplot as plt\n\n# Import datasets, classifiers and performance metrics\nfrom sklearn import datasets, metrics, svm\nfrom sklearn.model_selection import train_test_split\n"
+    "code": "import matplotlib.pyplot as plt\n# Import datasets, classifiers and performance metrics\nfrom sklearn import datasets, metrics, svm\nfrom sklearn.model_selection import train_test_split\n"
   },
   "cells": [
     {
@@ -40,7 +40,8 @@
           "uid": "6",
           "name": "clf"
         }
-      ]
+      ],
+      "output": "This is the output for the trainer cell."
     },
     {
       "uid": "cell_visualize",
