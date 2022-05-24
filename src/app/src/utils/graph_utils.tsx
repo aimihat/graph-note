@@ -49,7 +49,7 @@ export function addNode(setGraph: SetGraphType) {
   const newEmptyNode: NodeType = {
     id: newNodeId,
     type: "dagNode",
-    data: { label: newNodeId },
+    data: { },
     width: 150,
     height: 50,
     position: { x: 0, y: 0 },
@@ -95,7 +95,6 @@ export const autoLayout = (flowNodeStates: NodeType[]): NodeType[] => {
 
   flowNodeStates.forEach((node) => {
     g.setNode(node.id, {
-      label: node.id,
       width: node.width,
       height: node.height,
       inputPorts: node.data.inputPorts,

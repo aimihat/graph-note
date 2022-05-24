@@ -10,7 +10,6 @@ export type PortType = {
 };
 
 export type NodeDataType = {
-  label?: string;
   output?: string;
   code?: string;
   inputPorts?: PortType[];

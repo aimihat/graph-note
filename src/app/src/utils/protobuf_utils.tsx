@@ -12,7 +12,6 @@ function parse_message(deserialized_message: GraphMessageType): GraphType {
         id: cell.uid,
         type: "dagNode",
         data: {
-          label: cell.uid,
           output: cell.output,
           outputPorts: cell.outPorts,
           inputPorts: cell.inPorts,

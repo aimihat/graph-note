@@ -3,6 +3,7 @@ import { Handle, HandleType, Position } from "react-flow-renderer";
 import { NodeDataType, PortType } from "../../types";
 
 interface CustomNodeProps {
+  id: string;
   data: NodeDataType;
 }
 
@@ -37,7 +38,7 @@ function CustomHandle({
   );
 }
 
-export default memo(({ data }: CustomNodeProps) => {
+export default memo(({ id, data }: CustomNodeProps) => {
   let numOutputPorts = data.outputPorts?.length;
   let outPortHandles = data.outputPorts?.map(
     (port: PortType, index: number) => {
@@ -76,7 +77,7 @@ export default memo(({ data }: CustomNodeProps) => {
     <div className="nodeParent">
       <div className="custom-node" style={cellSize}>
         <div className="inputPorts">{inPortHandles}</div>
-        <div>{data.label}</div>
+        <div>{id}</div>
         <div className="outputPorts">{outPortHandles}</div>
       </div>
       <div className="nodeFooter">Cell status</div>
