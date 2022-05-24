@@ -6,7 +6,7 @@ import { Add, Save } from "@mui/icons-material";
 import NodeEditor from "./components/node_editor/editor";
 import { ReactFlowProvider } from "react-flow-renderer";
 import { EdgeType, GraphType, NodeType } from "./types";
-import { addNode } from "./utils/graph_utils";
+import { addNode, updateNode } from "./utils/graph_utils";
 
 const TEMP_NO_OP = (_: any) => {};
 
@@ -64,11 +64,11 @@ function App() {
         </Grid>
         <Grid item xs={6}>
           <NodeEditor
-            updateNodeId={TEMP_NO_OP}
             node={graph?.nodes.find(
               (node: NodeType) => node.id == selectedNodeId
             )}
-            updateNodeCode={TEMP_NO_OP}
+            setGraph={setGraph}
+            setSelectedNodeId={setSelectedNodeId}
           ></NodeEditor>
         </Grid>
       </Grid>

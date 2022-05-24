@@ -8,15 +8,17 @@ import {
   Divider,
   TextField,
 } from "@mui/material";
-import { NodeType } from "../../types";
+import React from "react";
+import { NodeType, SetGraphType } from "../../types";
+import { updateNode } from "../../utils/graph_utils";
 
 interface NodeEditorProps {
   node?: NodeType;
-  updateNodeCode: (code?: string) => void;
-  updateNodeId: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  setGraph: SetGraphType;
+  setSelectedNodeId: (id: string) => void;
 }
 
-function NodeEditor({ node, updateNodeCode, updateNodeId }: NodeEditorProps) {
+function NodeEditor({ node, setGraph, setSelectedNodeId }: NodeEditorProps) {
   // No cell selected.
   if (node === undefined) {
     return (
@@ -50,7 +52,10 @@ function NodeEditor({ node, updateNodeCode, updateNodeId }: NodeEditorProps) {
           variant="outlined"
           size="small"
           value={node.id}
-          onChange={updateNodeId}
+          onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+            updateNode(node?.id, {id: event.target.value}, setGraph);
+            setSelectedNodeId(event.target.value);
+          }}
         />
       </Box>
       <Box sx={{ my: 2 }}>
@@ -58,7 +63,9 @@ function NodeEditor({ node, updateNodeCode, updateNodeId }: NodeEditorProps) {
           height="60vh"
           defaultLanguage="python"
           value={node.data.code}
-          onChange={updateNodeCode}
+          onChange={(code?: string) => {
+            updateNode(node?.id, {data: {code: code}}, setGraph)
+          }}
         />
       </Box>
       <Divider></Divider>

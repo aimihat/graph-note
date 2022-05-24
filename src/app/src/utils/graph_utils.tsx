@@ -1,11 +1,13 @@
 import { GraphType, NodeType, SetGraphType } from "../types";
 import dagre from "dagre";
+var _ = require('lodash');
 
 export function updateNode(
   nodeId: string,
-  partialNode: NodeType, // TODO: make partial type?
+  partialNode: Partial<NodeType>,
   setGraph: SetGraphType
 ) {
+  // Overrides node with given `nodeId` with any properties defined in `partialNode`.
   setGraph((prevGraph?: GraphType) => {
     if (prevGraph === undefined) {
       console.log("Cannot update node on undefined graph.");
@@ -15,19 +17,30 @@ export function updateNode(
     const prevNodes = prevGraph.nodes;
     const updatedNodes = prevNodes.map((node: NodeType) => {
       if (node.id == nodeId) {
-        // Override any attributes defined in partialNode
-        // TODO: how to do?
-        // node.data.code = code;
+        return _.merge(node, partialNode)
       }
 
       return node;
     });
 
+    // If node id was updated, update edges to match
+    let updatedEdges = prevGraph.edges;
+    const newNodeId = partialNode.id;
+    if (newNodeId !== undefined) {
+      updatedEdges = prevGraph.edges.map(edge => {
+        edge.target = edge.target.replace(nodeId, newNodeId)
+        edge.source = edge.source.replace(nodeId, newNodeId)
+        return edge
+      })
+    }
+
     const updatedGraph = { ...prevGraph }; // TODO: correct way to copy?
     updatedGraph.nodes = updatedNodes;
+    updatedGraph.edges = updatedEdges;
 
     return updatedGraph;
   });
+  
 }
 
 export function addNode(setGraph: SetGraphType) {
