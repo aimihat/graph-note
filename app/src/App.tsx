@@ -5,19 +5,34 @@ import { Box, Button, Grid, Toolbar } from "@mui/material";
 import { Add, Save } from "@mui/icons-material";
 import NodeEditor from "./components/node_editor/editor";
 import { ReactFlowProvider } from "react-flow-renderer";
-import { EdgeType, GraphType, NodeType } from "./types";
-import { addNode, updateNode } from "./utils/graph_utils";
-
-const TEMP_NO_OP = (_: any) => {};
+import { GraphType, NodeType } from "./types";
+import { addNode } from "./utils/graph_utils";
+import { deserialize_graph, serialize_graph } from "./utils/protobuf_utils";
 
 function App() {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [graph, setGraph] = useState<GraphType>();
 
+  // Saves current graph and updates with the last compiled inputs/outputs.
   function saveDag() {
-    // convert back to proto
-    // call saveDag endpoint
-    // todo: update dag using newly compiled ports
+    if (graph === undefined) {
+      return;
+    }
+    serialize_graph(graph, function (buffer: Uint8Array) {
+      fetch("http://localhost:8000/save_graph", {
+        method: "POST",
+        body: buffer,
+      }).then((response) => {
+        response.arrayBuffer().then(responseBuffer => {
+          deserialize_graph(
+            responseBuffer,
+            function (deserialised_graph: GraphType) {
+              setGraph((_) => deserialised_graph);
+            }
+          );
+        })
+      });
+    });
   }
 
   return (
