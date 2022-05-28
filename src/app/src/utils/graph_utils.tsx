@@ -70,20 +70,6 @@ export function addNode(setGraph: SetGraphType) {
   });
 }
 
-// export function updateNodeId(event: React.ChangeEvent<HTMLInputElement>): void {
-//   setNodes((nodes: NodeType[]) =>
-//     nodes.map((node: NodeType) => {
-//       if (node.id == selectedNodeId) {
-//         node.id = event.target.value;
-//       }
-//       return node;
-//     })
-//   );
-
-//   // Ensure we keep selecting this node.
-//   setSelectedNodeId(event.target.value);
-// }
-
 export const autoLayout = (flowNodeStates: NodeType[]): NodeType[] => {
   // Takes an array of Nodes, and positions them according to dependencies.
 

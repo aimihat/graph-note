@@ -67,9 +67,8 @@ export function deserialize_graph(
 }
 
 export function serialize_graph(
-  nodes: NodeType[],
-  edges: EdgeType[],
-  callback: (arg0: Message) => void
+  graph: GraphType,
+  callback: (arg0: Uint8Array) => void
 ) {
   load("bundle.json", function (err, root) {
     if (err) throw err;
@@ -79,31 +78,33 @@ export function serialize_graph(
     const Graph = root.lookupType("Graph");
 
     // Create cells
-    const protoNodes = nodes.map((node: any) => {
+    const protoNodes = graph.nodes.map((node) =>
       root.lookupType("Cell").create({
         uid: node.id,
         code: node.data.code,
         in_ports: node.data.outputPorts,
         out_ports: node.data.inputPorts,
         output: node.data.output,
-      });
-    });
+      })
+    );
     // Create edges
-    const protoConnections = edges.map((edge: any) => {
+    const protoConnections = graph.edges.map((edge) =>
       root.lookupType("Connection").create({
         from_port: edge.sourceHandle,
         to_port: edge.targetHandle,
-      });
-    });
+      })
+    );
 
     // Create graph
-    const graph = Graph.create({
+    const graphMessage = Graph.create({
       cells: protoNodes,
       connections: protoConnections,
     });
 
     // TODO: handle root node.
+    var verifErr = Graph.verify(graphMessage);
+    if (verifErr) throw Error(verifErr);
 
-    callback(graph);
+    callback(Graph.encode(graphMessage).finish());
   });
 }
