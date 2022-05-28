@@ -1,0 +1,56 @@
+$node-border: 0.5px solid #1a192b;
+$node-border-radius: 4px;
+
+.nodeContainer {
+  background: #fff;
+  opacity: 0.7;
+  border-radius: $node-border-radius;
+  border: $node-border;
+
+  .nodeHeader {
+    font-size: 13px;
+    padding: 6px 0;
+    text-align: center;
+  }
+
+  .nodeBody {
+    color: #222;
+    font-size: 12px;
+    padding: 10px;
+    text-align: center;
+    width: 150px;
+    position: relative;
+  }
+  .nodeFooter {
+    font-size: 8px;
+    color: #333;
+    margin-top: 3px;
+    text-align: right;
+    width: 100%;
+    position: absolute;
+  }
+  
+}
+
+.react-flow__node.selected {
+  .nodeContainer {
+    /* background: #eeefff; */
+    opacity: 1;
+    border-style: solid;
+    /* border-color: darkorange; */
+    border-width: 1px;
+  }
+}
+
+
+.react-flow__handle.target span {
+  position: absolute;
+  font-size: 8.5px;
+  left: 10px;
+}
+
+.react-flow__handle.source span {
+  position: absolute;
+  font-size: 8.5px;
+  right: 10px;
+}
