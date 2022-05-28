@@ -7,7 +7,7 @@ import ReactFlow, {
 } from "react-flow-renderer";
 import DAGNode from "./custom_node";
 
-import "./node.css";
+import "./node.scss";
 import { GraphType, SetGraphType } from "../../types";
 import { deserialize_graph } from "../../utils/protobuf_utils";
 

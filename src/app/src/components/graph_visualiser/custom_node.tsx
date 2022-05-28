@@ -28,13 +28,16 @@ function CustomHandle({
   }
 
   return (
+    // <div className={"custom-handle " + String(type)}>
+    
     <Handle
       type={type}
       style={{ top: String(topPosition) + "%" }}
+      position={position}
       id={port.uid}
       isConnectable={true}
-      position={position}
-    />
+    ><span>{port.name}</span></Handle>
+    
   );
 }
 
@@ -70,17 +73,17 @@ export default memo(({ id, data }: CustomNodeProps) => {
   });
 
   // compute cell size based on number of ports
-  let maxVerticalPorts = Math.max(numInputPorts ?? 0, numOutputPorts ?? 0);
-  let cellSize = { lineHeight: maxVerticalPorts };
+  let maxVerticalPorts = Math.max(numInputPorts ?? 0, numOutputPorts ?? 0) * 10;
+  let cellSize = { height: String(maxVerticalPorts) + "px" };
 
   return (
-    <div className="nodeParent">
-      <div className="custom-node" style={cellSize}>
+    <div className="nodeContainer">
+      <div className="nodeHeader">{id}</div>
+      <div className="nodeBody" style={cellSize}>
         <div className="inputPorts">{inPortHandles}</div>
-        <div>{id}</div>
         <div className="outputPorts">{outPortHandles}</div>
       </div>
-      <div className="nodeFooter">Cell status</div>
+      <div className="nodeFooter">Last executed: 10s</div>
     </div>
   );
 });
