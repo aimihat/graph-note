@@ -1,5 +1,5 @@
 import Editor from "@monaco-editor/react";
-import { AccessTime } from "@mui/icons-material";
+import { AccessTime, PrecisionManufacturing } from "@mui/icons-material";
 import {
   Alert,
   AlertTitle,
@@ -8,7 +8,7 @@ import {
   Divider,
   TextField,
 } from "@mui/material";
-import React from "react";
+import React, { useRef } from "react";
 import { NodeType, SetGraphType } from "../../types";
 import { updateNode } from "../../utils/graph_utils";
 
@@ -18,7 +18,23 @@ interface NodeEditorProps {
   setSelectedNodeId: (id: string) => void;
 }
 
+// Updates the height of the editor based on its content.
+// const updateHeight = () => {
+// 	const contentHeight = Math.min(1000, editor.getContentHeight());
+// 	container.style.width = `${width}px`;
+// 	container.style.height = `${contentHeight}px`;
+// 	try {
+// 		ignoreEvent = true;
+// 		editor.layout({ width, height: contentHeight });
+// 	} finally {
+// 		ignoreEvent = false;
+// 	}
+// };
+
+
 function NodeEditor({ node, setGraph, setSelectedNodeId }: NodeEditorProps) {
+  const editorRef = useRef(null);
+
   // No cell selected.
   if (node === undefined) {
     return (
@@ -28,6 +44,23 @@ function NodeEditor({ node, setGraph, setSelectedNodeId }: NodeEditorProps) {
     );
   }
 
+  function handleEditorDidMount(editor: any, monaco: any) {
+    // here is the editor instance
+    // you can store it in `useRef` for further usage
+    editorRef.current = editor; 
+
+    const updateHeight = () => {
+      const contentHeight = Math.min(100, editor.getContentHeight());
+      console.log(editor);
+      try {
+        editor.layout({ width: "100%", height: contentHeight });
+      } finally {
+      }
+    };
+    editor.onDidContentSizeChange(updateHeight);
+    updateHeight();
+
+  }
   // Display cell output.
   let cell_output = <></>;
   if (node.data.output) {
@@ -60,16 +93,18 @@ function NodeEditor({ node, setGraph, setSelectedNodeId }: NodeEditorProps) {
       </Box>
       <Box sx={{ my: 2 }}>
         <Editor
-          height="60vh"
+          // height="60vh"
           defaultLanguage="python"
           value={node.data.code}
           onChange={(code?: string) => {
             updateNode(node?.id, {data: {code: code}}, setGraph)
           }}
+          onMount={handleEditorDidMount}
+
         />
       </Box>
       <Divider></Divider>
-      {cell_output}
+      <pre>{cell_output}</pre>
     </Container>
   );
 }

@@ -82,16 +82,25 @@ export function serialize_graph(
       root.lookupType("Cell").create({
         uid: node.id,
         code: node.data.code,
-        in_ports: node.data.outputPorts,
-        out_ports: node.data.inputPorts,
+        inPorts:
+          node.data.inputPorts?.map(p => root.lookupType("Port").create(p)) ?? [],
+        outPorts:
+          node.data.outputPorts?.map(p => root.lookupType("Port").create(p)) ?? [],
         output: node.data.output,
       })
     );
+
+    console.log(protoNodes)
+
     // Create edges
     const protoConnections = graph.edges.map((edge) =>
       root.lookupType("Connection").create({
-        from_port: edge.sourceHandle,
-        to_port: edge.targetHandle,
+        fromPort: root
+          .lookupType("Port")
+          .create({ uid: edge.sourceHandle, name: edge.source }),
+        toPort: root
+          .lookupType("Port")
+          .create({ uid: edge.targetHandle, name: edge.target }),
       })
     );
 

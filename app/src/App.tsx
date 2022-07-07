@@ -9,29 +9,62 @@ import { GraphType, NodeType } from "./types";
 import { addNode } from "./utils/graph_utils";
 import { deserialize_graph, serialize_graph } from "./utils/protobuf_utils";
 
+let ToBase64 = function (u8: any) {
+  return btoa(String.fromCharCode.apply(null, u8));
+};
+
 function App() {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [graph, setGraph] = useState<GraphType>();
 
+  // Extracts a graph from the binary response and sets it as the current graph.
+  function handleUpdatedGraph(response: Response) {
+    response.arrayBuffer().then((responseBuffer) => {
+      deserialize_graph(
+        responseBuffer,
+        function (deserialised_graph: GraphType) {
+          console.log(deserialised_graph)
+          setGraph((_) => deserialised_graph);
+          console.log(selectedNodeId);
+        }
+      );
+    });
+  }
+
   // Saves current graph and updates with the last compiled inputs/outputs.
-  function saveDag() {
+  async function saveDag(callback?: any) {
     if (graph === undefined) {
       return;
     }
-    serialize_graph(graph, function (buffer: Uint8Array) {
+    serialize_graph(graph, function (u8: Uint8Array) {
+      var b64 = ToBase64(u8);
       fetch("http://localhost:8000/save_graph", {
         method: "POST",
-        body: buffer,
-      }).then((response) => {
-        response.arrayBuffer().then(responseBuffer => {
-          deserialize_graph(
-            responseBuffer,
-            function (deserialised_graph: GraphType) {
-              setGraph((_) => deserialised_graph);
-            }
-          );
-        })
-      });
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ b64_graph: b64 }),
+      })
+        .then(handleUpdatedGraph)
+        .then(callback);
+    });
+  }
+
+  function runCell() {
+    // First save the DAG, to ensure the cell code to be run is up to date.
+    saveDag(() => {
+      // run_cell with the selected node's id
+      if (selectedNodeId !== null) {
+        fetch(
+          `http://localhost:8000/run_cell?cell_uid=${encodeURIComponent(
+            selectedNodeId
+          )}`,
+          {
+            method: "GET",
+          }
+        ).then(handleUpdatedGraph);
+      }
     });
   }
 
@@ -64,6 +97,17 @@ function App() {
               onClick={saveDag}
             >
               Save DAG
+              <Save sx={{ mx: 1 }} />
+            </Button>
+            <Button
+              sx={{ mx: 1 }}
+              variant="outlined"
+              color="secondary"
+              aria-label="add"
+              title=""
+              onClick={runCell}
+            >
+              Run cell
               <Save sx={{ mx: 1 }} />
             </Button>
           </Toolbar>
