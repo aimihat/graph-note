@@ -24,3 +24,8 @@ Sub tagline: Interactive python DAGs (for ML and data pipelines, but could be sa
 - Think of it as a DAG Jupyter where nodes are cells, not notebooks
 - Individual outputs surfaced?
     - Enables library of standard cells, based on standard outputs
+
+#### Useful commands
+
+- Start Graphnote: `python start.py`
+- Run tests: `python -m pytest`
