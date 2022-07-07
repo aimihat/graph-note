@@ -1,13 +1,7 @@
-import dataclasses
-import imp
 import uuid
-from typing import List
 
-from graphnote.execution.helpers import code_helpers
-from graphnote.proto.classes import graph_pb2
-
-INPUT_VAR_TAG = "INPUT"
-OUTPUT_VAR_TAG = "OUTPUT"
+from execution.helpers import code_helpers
+from proto.classes import graph_pb2
 
 
 def detect_in_ports(cell: graph_pb2.Cell) -> None:
@@ -15,7 +9,7 @@ def detect_in_ports(cell: graph_pb2.Cell) -> None:
     # TODO: cache based on cell name and code hash.
 
     # Detect input ports.
-    cell_inputs = code_helpers.detect_tag(cell.code, INPUT_VAR_TAG)
+    cell_inputs = code_helpers.detect_tag(cell.code, code_helpers.INPUT_VAR_TAG)
 
     # Keep existing ports (to preserve port ids) & add new ports.
     existing_ports = list(cell.in_ports)

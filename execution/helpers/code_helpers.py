@@ -1,9 +1,10 @@
 import re
 from typing import Set
 
-from graphnote.execution.helpers.graph_helpers import INPUT_VAR_TAG
-from graphnote.proto.classes import graph_pb2
+from proto.classes import graph_pb2
 
+INPUT_VAR_TAG = "INPUT"
+OUTPUT_VAR_TAG = "OUTPUT"
 
 def indent_code(code: str) -> str:
     """Indents a code snippet by a tab."""
