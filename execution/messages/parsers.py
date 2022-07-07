@@ -1,7 +1,7 @@
 import enum
 from typing import Any, Dict, Optional
 
-from graphnote.execution.messages import definitions
+from execution.messages import definitions
 
 
 class HandledMessages(enum.Enum):
