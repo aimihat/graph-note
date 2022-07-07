@@ -7,7 +7,7 @@ import jupyter_client
 from execution.helpers.code_helpers import compile_cell
 from execution.helpers.graph_helpers import validate_cell, validate_root
 from execution.messages import definitions, parsers
-from kernel import initialization
+from execution.kernel import initialization
 from proto.classes import graph_pb2
 
 
@@ -54,6 +54,7 @@ class GraphExecutor:
             raise Exception("The cell is not valid and cannot be run.")
 
     def update_cell_output(self, cell, msg):
+        # TODO: are there cases where a single execution produces both stderr and stdout?
         parsed_message = parsers.parse_message(msg)
         if type(parsed_message.content) == definitions.CellStdout:
             cell.output = parsed_message.content.text

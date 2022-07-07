@@ -11,7 +11,7 @@ future: run full dag, with websocket updates.
 from fastapi import FastAPI, File, Response, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from execution.helpers.graph_helpers import detect_in_ports
-from kernel.launcher import CONNECT_FILE_PATH
+from execution.kernel.launcher import CONNECT_FILE_PATH
 import logging
 from pydantic import BaseModel
 import base64
