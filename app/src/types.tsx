@@ -38,4 +38,5 @@ export type GraphType = {
   nodes: NodeType[];
   edges: EdgeType[];
   root?: NodeType; // TODO: not optional.
+  selectedCell?: string;
 };

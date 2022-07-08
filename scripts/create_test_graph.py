@@ -2,7 +2,7 @@ import sys
 from google.protobuf.json_format import MessageToJson
 
 sys.path.append("../")
-from src.proto.classes import graph_pb2
+from graphnote.proto.classes import graph_pb2
 
 
 # Create cells

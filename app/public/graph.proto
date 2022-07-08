@@ -15,10 +15,10 @@ message Cell {
   string code = 2;
 
   // Cell ins/outs are updated whenever a cell is compiled.
-  repeated Port in_ports = 3;
-  repeated Port out_ports = 4;
+  repeated Port in_ports = 4;
+  repeated Port out_ports = 5;
 
-  optional string output = 5;
+  optional string output = 6;
 
   // @future: last_executed;
   // @future: last_execution_status; (success / failure)
@@ -28,4 +28,6 @@ message Graph {
   Cell root = 1;
   repeated Cell cells = 2;
   repeated Connection connections = 3;
+
+  optional string selected_cell = 4; 
 }

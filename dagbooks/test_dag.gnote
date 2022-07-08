@@ -1,16 +1,19 @@
 
-Å
-	cell_root·import matplotlib.pyplot as plt
+Æ
+	cell_root¸
+import matplotlib.pyplot as plt
 # Import datasets, classifiers and performance metrics
 from sklearn import datasets, metrics, svm
 from sklearn.model_selection import train_test_split
-}
-	cell_dataSdigits = datasets.load_digits()
+~
+	cell_dataT
+digits = datasets.load_digits()
 
 graphnote.out({"digits__different_name": digits})
-"
-1digits__different_nameò
-cell_trainerö# flatten the images
+*
+1digits__different_nameó
+cell_trainer÷
+# flatten the images
 n_samples = len(INPUT["digits"].images)
 data = digits.images.reshape((n_samples, -1))
 
@@ -36,13 +39,14 @@ graphnote.out(
         "y_test": y_test,
     }
 )
-
-2digits"
-3X_test"
-4	predicted"
-5y_test"
-6clf*(This is the output for the trainer cell.í
-cell_visualize¥# Below we visualize the first 4 test samples and show their predicted digit value in the title.
+"
+2digits*
+3X_test*
+4	predicted*
+5y_test*
+6clf2(This is the output for the trainer cell.ì
+cell_visualize¤
+# Below we visualize the first 4 test samples and show their predicted digit value in the title.
 
 _, axes = plt.subplots(nrows=1, ncols=4, figsize=(10, 3))
 for ax, image, prediction in zip(axes, INPUT["X_test"], INPUT["predicted"]):
@@ -52,13 +56,15 @@ for ax, image, prediction in zip(axes, INPUT["X_test"], INPUT["predicted"]):
     ax.set_title(f"Prediction: {prediction}")
 
 print(
-    f'Classification report for classifier {INPUT["clf"]}:\n'
-    f'{metrics.classification_report(INPUT["y_test"], INPUT["predicted"])}\n'
+    f'Classification report for classifier {INPUT["clf"]}:
+'
+    f'{metrics.classification_report(INPUT["y_test"], INPUT["predicted"])}
+'
 )
-
-7X_test
-8	predicted
-9y_test	
+"
+7X_test"
+8	predicted"
+9y_test"	
 10clf*
 
 1digits__different_name

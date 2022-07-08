@@ -42,6 +42,7 @@ class GraphExecutor:
         self.logger.info(
             f"Executing {cell.uid}, with inputs {cell.in_ports}, and outputs {cell.out_ports}"
         )
+
         if validate_cell(self.dag, cell):
             exec_code = compile_cell(self.dag, cell)
 

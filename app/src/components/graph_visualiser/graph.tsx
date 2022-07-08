@@ -20,12 +20,11 @@ const nodeTypes = {
 };
 
 interface FlowProps {
-  setSelectedNodeId: (arg0: string) => void;
   setGraph: SetGraphType;
   graph?: GraphType;
 }
 
-function Flow({ setSelectedNodeId, graph, setGraph }: FlowProps) {
+function Flow({ graph, setGraph }: FlowProps) {
   const [reactFlowInstance, setReactFlowInstance] =
     useState<ReactFlowInstance | null>();
 
@@ -39,6 +38,7 @@ function Flow({ setSelectedNodeId, graph, setGraph }: FlowProps) {
           serialised_graph,
           function (deserialised_graph: GraphType) {
             setGraph((_) => deserialised_graph);
+            console.log(deserialised_graph?.nodes)
           }
         );
       })
@@ -46,7 +46,13 @@ function Flow({ setSelectedNodeId, graph, setGraph }: FlowProps) {
   };
 
   function updateSelectedNode(_: React.MouseEvent, node: Node) {
-    setSelectedNodeId(node.id);
+    setGraph((prevGraph?: GraphType) => {
+      if (prevGraph === undefined)
+        return undefined
+      const updatedGraph = { ...prevGraph };
+      updatedGraph.selectedCell = node.id;
+      return updatedGraph
+    });
   }
 
   useEffect(() => {

@@ -44,16 +44,16 @@
         "inPorts": {
           "rule": "repeated",
           "type": "Port",
-          "id": 3
+          "id": 4
         },
         "outPorts": {
           "rule": "repeated",
           "type": "Port",
-          "id": 4
+          "id": 5
         },
         "output": {
           "type": "string",
-          "id": 5,
+          "id": 6,
           "options": {
             "proto3_optional": true
           }
@@ -61,6 +61,13 @@
       }
     },
     "Graph": {
+      "oneofs": {
+        "_selectedCell": {
+          "oneof": [
+            "selectedCell"
+          ]
+        }
+      },
       "fields": {
         "root": {
           "type": "Cell",
@@ -75,6 +82,13 @@
           "rule": "repeated",
           "type": "Connection",
           "id": 3
+        },
+        "selectedCell": {
+          "type": "string",
+          "id": 4,
+          "options": {
+            "proto3_optional": true
+          }
         }
       }
     }

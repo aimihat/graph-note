@@ -8,13 +8,13 @@ import { ReactFlowProvider } from "react-flow-renderer";
 import { GraphType, NodeType } from "./types";
 import { addNode } from "./utils/graph_utils";
 import { deserialize_graph, serialize_graph } from "./utils/protobuf_utils";
+import { HotKeys } from "react-hotkeys";
 
 let ToBase64 = function (u8: any) {
   return btoa(String.fromCharCode.apply(null, u8));
 };
 
 function App() {
-  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [graph, setGraph] = useState<GraphType>();
 
   // Extracts a graph from the binary response and sets it as the current graph.
@@ -25,7 +25,6 @@ function App() {
         function (deserialised_graph: GraphType) {
           console.log(deserialised_graph)
           setGraph((_) => deserialised_graph);
-          console.log(selectedNodeId);
         }
       );
     });
@@ -55,10 +54,10 @@ function App() {
     // First save the DAG, to ensure the cell code to be run is up to date.
     saveDag(() => {
       // run_cell with the selected node's id
-      if (selectedNodeId !== null) {
+      if (graph?.selectedCell !== undefined) {
         fetch(
           `http://localhost:8000/run_cell?cell_uid=${encodeURIComponent(
-            selectedNodeId
+            graph.selectedCell
           )}`,
           {
             method: "GET",
@@ -68,70 +67,78 @@ function App() {
     });
   }
 
+  const keyMap = {
+    RUN_CELL: "shift+enter",
+  }
+
+  const hotkeyHandlers = {
+    RUN_CELL: runCell
+  }
+
   return (
-    <Box>
-      <Grid container>
-        <Grid item xs={6} position="relative">
-          <Toolbar
-            style={{ position: "absolute", zIndex: 999, top: 20, right: 20 }}
-          >
-            <Button
-              sx={{ mx: 1 }}
-              variant="outlined"
-              color="primary"
-              aria-label="add"
-              title=""
-              onClick={() => {
-                addNode(setGraph);
-              }}
+    <HotKeys keyMap={keyMap} handlers={hotkeyHandlers}>
+      <Box>
+        <Grid container>
+          <Grid item xs={6} position="relative">
+            <Toolbar
+              style={{ position: "absolute", zIndex: 999, top: 20, right: 20 }}
             >
-              New node
-              <Add sx={{ mx: 1 }} />
-            </Button>
-            <Button
-              sx={{ mx: 1 }}
-              variant="outlined"
-              color="secondary"
-              aria-label="add"
-              title=""
-              onClick={saveDag}
-            >
-              Save DAG
-              <Save sx={{ mx: 1 }} />
-            </Button>
-            <Button
-              sx={{ mx: 1 }}
-              variant="outlined"
-              color="secondary"
-              aria-label="add"
-              title=""
-              onClick={runCell}
-            >
-              Run cell
-              <Save sx={{ mx: 1 }} />
-            </Button>
-          </Toolbar>
-          <Box style={{ position: "relative", width: "100%", height: "100vh" }}>
-            <ReactFlowProvider>
-              <Flow
-                setSelectedNodeId={setSelectedNodeId}
-                graph={graph}
-                setGraph={setGraph}
-              />
-            </ReactFlowProvider>
-          </Box>
+              <Button
+                sx={{ mx: 1 }}
+                variant="outlined"
+                color="primary"
+                aria-label="add"
+                title=""
+                onClick={() => {
+                  addNode(setGraph);
+                }}
+              >
+                New node
+                <Add sx={{ mx: 1 }} />
+              </Button>
+              <Button
+                sx={{ mx: 1 }}
+                variant="outlined"
+                color="secondary"
+                aria-label="add"
+                title=""
+                onClick={saveDag}
+              >
+                Save DAG
+                <Save sx={{ mx: 1 }} />
+              </Button>
+              <Button
+                sx={{ mx: 1 }}
+                variant="outlined"
+                color="secondary"
+                aria-label="add"
+                title=""
+                onClick={runCell}
+              >
+                Run cell
+                <Save sx={{ mx: 1 }} />
+              </Button>
+            </Toolbar>
+            <Box style={{ position: "relative", width: "100%", height: "100vh" }}>
+              <ReactFlowProvider>
+                <Flow
+                  graph={graph}
+                  setGraph={setGraph}
+                />
+              </ReactFlowProvider>
+            </Box>
+          </Grid>
+          <Grid item xs={6}>
+            <NodeEditor
+              node={graph?.nodes.find(
+                (node: NodeType) => node.id == graph.selectedCell
+              )}
+              setGraph={setGraph}
+            ></NodeEditor>
+          </Grid>
         </Grid>
-        <Grid item xs={6}>
-          <NodeEditor
-            node={graph?.nodes.find(
-              (node: NodeType) => node.id == selectedNodeId
-            )}
-            setGraph={setGraph}
-            setSelectedNodeId={setSelectedNodeId}
-          ></NodeEditor>
-        </Grid>
-      </Grid>
-    </Box>
+      </Box>
+    </HotKeys>
   );
 }
 

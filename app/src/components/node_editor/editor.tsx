@@ -9,13 +9,12 @@ import {
   TextField,
 } from "@mui/material";
 import React, { useRef } from "react";
-import { NodeType, SetGraphType } from "../../types";
+import { GraphType, NodeType, SetGraphType } from "../../types";
 import { updateNode } from "../../utils/graph_utils";
 
 interface NodeEditorProps {
   node?: NodeType;
   setGraph: SetGraphType;
-  setSelectedNodeId: (id: string) => void;
 }
 
 // Updates the height of the editor based on its content.
@@ -32,7 +31,7 @@ interface NodeEditorProps {
 // };
 
 
-function NodeEditor({ node, setGraph, setSelectedNodeId }: NodeEditorProps) {
+function NodeEditor({ node, setGraph }: NodeEditorProps) {
   const editorRef = useRef(null);
 
   // No cell selected.
@@ -44,23 +43,6 @@ function NodeEditor({ node, setGraph, setSelectedNodeId }: NodeEditorProps) {
     );
   }
 
-  function handleEditorDidMount(editor: any, monaco: any) {
-    // here is the editor instance
-    // you can store it in `useRef` for further usage
-    editorRef.current = editor; 
-
-    const updateHeight = () => {
-      const contentHeight = Math.min(100, editor.getContentHeight());
-      console.log(editor);
-      try {
-        editor.layout({ width: "100%", height: contentHeight });
-      } finally {
-      }
-    };
-    editor.onDidContentSizeChange(updateHeight);
-    updateHeight();
-
-  }
   // Display cell output.
   let cell_output = <></>;
   if (node.data.output) {
@@ -87,20 +69,24 @@ function NodeEditor({ node, setGraph, setSelectedNodeId }: NodeEditorProps) {
           value={node.id}
           onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
             updateNode(node?.id, {id: event.target.value}, setGraph);
-            setSelectedNodeId(event.target.value);
+            setGraph((prevGraph?: GraphType) => {
+              if (prevGraph === undefined)
+                return undefined
+              const updatedGraph = { ...prevGraph };
+              updatedGraph.selectedCell = event.target.value;
+              return updatedGraph
+            });
           }}
         />
       </Box>
       <Box sx={{ my: 2 }}>
         <Editor
-          // height="60vh"
+          height="60vh"
           defaultLanguage="python"
           value={node.data.code}
           onChange={(code?: string) => {
             updateNode(node?.id, {data: {code: code}}, setGraph)
           }}
-          onMount={handleEditorDidMount}
-
         />
       </Box>
       <Divider></Divider>

@@ -5,6 +5,9 @@ import { autoLayout } from "./graph_utils";
 export type GraphMessageType = any;
 
 function parse_message(deserialized_message: GraphMessageType): GraphType {
+  // Parse graph-level attributes
+  const selectedCell = deserialized_message.selectedCell;
+
   // Parse nodes
   const nodes = autoLayout(
     deserialized_message.cells.map((cell: any) => {
@@ -19,6 +22,7 @@ function parse_message(deserialized_message: GraphMessageType): GraphType {
         },
         width: 150,
         height: 50,
+        selected: cell.uid === selectedCell
       };
     })
   );
@@ -40,9 +44,12 @@ function parse_message(deserialized_message: GraphMessageType): GraphType {
     };
   });
 
+
+  console.log("Selected cell is "  + deserialized_message.selectedCell)
   const graph = {
     nodes: nodes,
     edges: edges,
+    selectedCell: selectedCell,
   };
 
   return graph;
@@ -108,6 +115,7 @@ export function serialize_graph(
     const graphMessage = Graph.create({
       cells: protoNodes,
       connections: protoConnections,
+      selectedCell: graph.selectedCell
     });
 
     // TODO: handle root node.

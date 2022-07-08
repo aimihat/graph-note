@@ -36,6 +36,8 @@ def validate_root(root: graph_pb2.Cell) -> bool:
 def validate_cell(dag: graph_pb2.Graph, cell: graph_pb2.Cell) -> bool:
     """Assert that the cell's input ports are connected. Disconnected outputs can be ignored."""
 
+    # TODO: check that the cell inputs have a runtime value
+
     # Ensure ports are up-to-date.
     detect_in_ports(cell)
 
