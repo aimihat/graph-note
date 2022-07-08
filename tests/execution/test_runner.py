@@ -3,9 +3,6 @@ import inspect
 from execution.kernel import initialization
 from execution.runner import GraphExecutor
 import asyncio
-# class MockClient:
-#     def _async_execute_interactive(self):
-
 
 class TestRunner:
     @pytest.mark.asyncio
