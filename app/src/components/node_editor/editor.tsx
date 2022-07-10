@@ -1,3 +1,4 @@
+import Ansi from "ansi-to-react";
 import Editor from "@monaco-editor/react";
 import { AccessTime, PrecisionManufacturing } from "@mui/icons-material";
 import {
@@ -52,7 +53,7 @@ function NodeEditor({ node, setGraph }: NodeEditorProps) {
           <AlertTitle>
             Output <i>(5hrs ago)</i>
           </AlertTitle>
-          {node.data.output}
+          <Ansi>{node.data.output}</Ansi>
         </Alert>
       </Box>
     );
@@ -90,6 +91,7 @@ function NodeEditor({ node, setGraph }: NodeEditorProps) {
         />
       </Box>
       <Divider></Divider>
+      
       <pre>{cell_output}</pre>
     </Container>
   );

@@ -30,7 +30,7 @@ function parse_message(deserialized_message: GraphMessageType): GraphType {
   // Parse edges (can be made more efficient by caching port -> nodeid map)
   const edges = deserialized_message.connections.map((conn: any) => {
     return {
-      id: conn.fromPort.uid, // arbitrary but must be unique
+      id: `${conn.fromPort.uid} + ${conn.toPort.uid}`,
       sourceHandle: conn.fromPort.uid,
       targetHandle: conn.toPort.uid,
       source: deserialized_message.cells.find((node: any) => {
@@ -44,8 +44,6 @@ function parse_message(deserialized_message: GraphMessageType): GraphType {
     };
   });
 
-
-  console.log("Selected cell is "  + deserialized_message.selectedCell)
   const graph = {
     nodes: nodes,
     edges: edges,
