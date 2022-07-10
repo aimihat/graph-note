@@ -36,8 +36,7 @@ DAGBOOK_PATH = "dagbooks/test_dag.gnote"
 with open(DAGBOOK_PATH, "rb") as f:
     test_graph = graph_pb2.Graph()
     test_graph.ParseFromString(f.read())
-
-runner = GraphExecutor(client, test_graph)
+    runner = GraphExecutor(client, test_graph)
 
 # Prepare the kernel for execution.
 asyncio.run(runner.init_kernel())
@@ -58,7 +57,7 @@ app.add_middleware(
 @app.get("/read_graph")
 def read_graph():
     """Returns the serialised graph."""
-    return Response(test_graph.SerializeToString())
+    return Response(runner.dag.SerializeToString())
 
 class Item(BaseModel):
     b64_graph: str
@@ -79,19 +78,18 @@ def save_graph(body: Item):
         detect_in_ports(cell)
 
     # TODO: actually save the updated DAG and not just update state.
-    global test_graph
-    test_graph = req_graph
+    runner.dag = req_graph
     return Response(req_graph.SerializeToString())
 
 
 @app.get("/run_cell")
 async def run_cell(cell_uid: str):
     """Runs the cell & returns updated cell (with output)"""
-    global test_graph
 
-    for cell in test_graph.cells:
+    print(runner.dag.connections)
+    for cell in runner.dag.cells:
         if cell.uid == cell_uid:
             await runner.run_cell(cell)
 
     # TODO: update output ports
-    return Response(test_graph.SerializeToString())
+    return Response(runner.dag.SerializeToString())

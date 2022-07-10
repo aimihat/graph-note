@@ -46,11 +46,6 @@ def validate_cell(dag: graph_pb2.Graph, cell: graph_pb2.Cell) -> bool:
 
     # TODO: prune connections before checking for validity.
     connected_inputs = [c.to_port.uid for c in dag.connections]
-    print(
-        connected_inputs,
-        all(p.uid in connected_inputs for p in cell.in_ports),
-        cell.in_ports,
-    )
     return all(p.uid in connected_inputs for p in cell.in_ports)
 
 

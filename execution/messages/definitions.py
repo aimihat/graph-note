@@ -15,6 +15,12 @@ class CellStderr:
     name: str
     text: str
 
+@dataclasses.dataclass
+class CellError:
+    error: str
+    traceback: str
+    error_value: str
+
 
 RawContent = Dict[str, Any]
 

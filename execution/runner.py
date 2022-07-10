@@ -57,9 +57,12 @@ class GraphExecutor:
     def update_cell_output(self, cell, msg):
         # TODO: are there cases where a single execution produces both stderr and stdout?
         parsed_message = parsers.parse_message(msg)
+
         if type(parsed_message.content) == definitions.CellStdout:
             cell.output = parsed_message.content.text
         elif type(parsed_message.content) == definitions.CellStderr:
             cell.output = parsed_message.content.text
+        elif type(parsed_message.content) == definitions.CellError:
+            cell.output = f"{parsed_message.content.error}: {parsed_message.content.error_value}\n{parsed_message.content.traceback}"
         else:
             logging.warning("Unknown output type.")

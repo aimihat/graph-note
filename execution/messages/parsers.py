@@ -1,12 +1,27 @@
 import enum
 from typing import Any, Dict, Optional
-
+import re
 from execution.messages import definitions
 
 
 class HandledMessages(enum.Enum):
     stream = "stream"
+    error = "error"
 
+
+def parse_ansi_escape(text):
+    ansi_escape = re.compile(r'''
+        \x1B  # ESC
+        (?:   # 7-bit C1 Fe (except CSI)
+            [@-Z\\-_]
+        |     # or [ for CSI, followed by a control sequence
+            \[
+            [0-?]*  # Parameter bytes
+            [ -/]*  # Intermediate bytes
+            [@-~]   # Final byte
+        )
+    ''', re.VERBOSE)
+    return ansi_escape.sub('', text)
 
 def parse_message(message: Dict[str, Any]) -> definitions.Message:
     raw_message = definitions.Message(
@@ -41,5 +56,12 @@ def parse_content(message: definitions.Message) -> Optional[definitions.Content]
             return definitions.CellStderr(
                 message.content["name"], message.content["text"]
             )
+    elif message_type == message_type.error:
+        assert type(message.content) == dict
+        return definitions.CellError(
+            error=message.content["ename"],
+            traceback="\n".join(message.content["traceback"]),
+            error_value=message.content["evalue"],
+        )
     else:
         raise Exception("This shouldn't happen")
