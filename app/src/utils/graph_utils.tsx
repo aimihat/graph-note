@@ -1,4 +1,4 @@
-import { GraphType, NodeType, SetGraphType } from "../types";
+import { EdgeType, GraphType, NodeType, SetGraphType } from "../types";
 import dagre from "dagre";
 var _ = require('lodash');
 
@@ -61,7 +61,7 @@ export function addNode(setGraph: SetGraphType) {
       return undefined;
     }
     const prevNodes = prevGraph.nodes;
-    const updatedNodes = autoLayout([...prevNodes, newEmptyNode]);
+    const updatedNodes = autoLayout([...prevNodes, newEmptyNode], prevGraph.edges);
 
     const updatedGraph = { ...prevGraph }; // TODO: correct way to copy?
     updatedGraph.nodes = updatedNodes;
@@ -70,11 +70,11 @@ export function addNode(setGraph: SetGraphType) {
   });
 }
 
-export const autoLayout = (flowNodeStates: NodeType[]): NodeType[] => {
+export const autoLayout = (flowNodeStates: NodeType[], edges: EdgeType[]): NodeType[] => {
   // Takes an array of Nodes, and positions them according to dependencies.
 
   const g = new dagre.graphlib.Graph({ directed: true });
-  g.setGraph({ rankdir: "network-simplex" });
+  g.setGraph({ rankdir: "LR" });
 
   // Default to assigning a new object as a label for each new edge.
   g.setDefaultEdgeLabel(() => ({}));
@@ -90,11 +90,12 @@ export const autoLayout = (flowNodeStates: NodeType[]): NodeType[] => {
       type: node.type,
     });
 
-    // TODO: set edges based on your data structure of the graph.
-    // node.data.outputPorts &&
-    //   node.data.outBoundEdges.forEach((edge: any) => {
-    //     g.setEdge(node.id, edge.targetNodeId);
-    //   });
+    edges.forEach(edge => {
+      if (edge.source == node.id) {
+        g.setEdge(node.id, edge.target);
+        console.log("Setting edge: " + node.id + ', ' + edge.target);
+      }
+    })
   });
 
   dagre.layout(g);

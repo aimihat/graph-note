@@ -45,19 +45,18 @@ function NodeEditor({ node, setGraph }: NodeEditorProps) {
 
   // Display cell output.
   let cell_output = (
-    <Box sx={{ my: 2 }}>
       <Alert severity="info">
         <AlertTitle>
           Output <i>(5hrs ago)</i>
         </AlertTitle>
         <Ansi>{node.data.output ?? ""}</Ansi>
       </Alert>
-    </Box>
   );
 
   return (
-    <Container>
-      <Box paddingY={2}>
+    <>
+      <Container>
+        <Box paddingY={2}>
         <TextField
           id="node-id"
           label="Node name"
@@ -74,8 +73,7 @@ function NodeEditor({ node, setGraph }: NodeEditorProps) {
             });
           }}
         />
-      </Box>
-      <Box sx={{ my: 2 }}>
+        </Box>
         <Editor
           height="55vh"
           defaultLanguage="python"
@@ -84,11 +82,11 @@ function NodeEditor({ node, setGraph }: NodeEditorProps) {
             updateNode(node?.id, { data: { code: code } }, setGraph);
           }}
         />
-      </Box>
+      </Container>
       <Divider></Divider>
 
-      <pre style={{height: "30vh", overflow: "scroll"}}>{cell_output}</pre>
-    </Container>
+      <pre style={{height: "38vh", overflow: "scroll", overflowY: "auto", margin:0}}>{cell_output}</pre>
+    </>
   );
 }
 

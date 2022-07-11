@@ -21,7 +21,7 @@ import {
 import NodeEditor from "./components/node_editor/editor";
 import { ReactFlowProvider } from "react-flow-renderer";
 import { APIResponses, GraphType, NodeType } from "./types";
-import { addNode } from "./utils/graph_utils";
+import { addNode, autoLayout } from "./utils/graph_utils";
 import { deserialize_graph, serialize_graph } from "./utils/protobuf_utils";
 import { HotKeys, configure } from "react-hotkeys";
 import moment from "moment";

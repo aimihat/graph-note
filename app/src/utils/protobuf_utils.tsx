@@ -8,25 +8,6 @@ function parse_message(deserialized_message: GraphMessageType): GraphType {
   // Parse graph-level attributes
   const selectedCell = deserialized_message.selectedCell;
 
-  // Parse nodes
-  const nodes = autoLayout(
-    deserialized_message.cells.map((cell: any) => {
-      return {
-        id: cell.uid,
-        type: "dagNode",
-        data: {
-          output: cell.output,
-          outputPorts: cell.outPorts,
-          inputPorts: cell.inPorts,
-          code: cell.code,
-        },
-        width: 150,
-        height: 50,
-        selected: cell.uid === selectedCell,
-      };
-    })
-  );
-
   // Parse edges (can be made more efficient by caching port -> nodeid map)
   console.log(deserialized_message.connections)
   const edges = deserialized_message.connections.map((conn: any) => {
@@ -45,6 +26,24 @@ function parse_message(deserialized_message: GraphMessageType): GraphType {
     };
   });
 
+  // Parse nodes
+  const nodes = autoLayout(
+    deserialized_message.cells.map((cell: any) => {
+      return {
+        id: cell.uid,
+        type: "dagNode",
+        data: {
+          output: cell.output,
+          outputPorts: cell.outPorts,
+          inputPorts: cell.inPorts,
+          code: cell.code,
+        },
+        width: 150,
+        height: 50,
+        selected: cell.uid === selectedCell,
+      };
+    }), edges
+  );
   const graph = {
     nodes: nodes,
     edges: edges,

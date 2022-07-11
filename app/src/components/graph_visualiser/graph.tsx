@@ -4,13 +4,7 @@ import ReactFlow, {
   MiniMap,
   Node,
   ReactFlowInstance,
-  applyEdgeChanges,
-  applyNodeChanges,
-  NodeChange,
-  EdgeChange,
   Edge,
-  useEdgesState,
-  addEdge,
   Connection,
 } from "react-flow-renderer";
 import DAGNode from "./custom_node";
@@ -18,6 +12,7 @@ import DAGNode from "./custom_node";
 import "./node.scss";
 import { EdgeType, GraphType, NodeType, SetGraphType } from "../../types";
 import { deserialize_graph } from "../../utils/protobuf_utils";
+import { autoLayout } from "../../utils/graph_utils";
 
 const rfStyle = {
   backgroundColor: "#B8CEFF",
@@ -41,12 +36,16 @@ function Flow({ graph, setGraph }: FlowProps) {
       }
 
       const updatedGraph = { ...prevGraph };
-      const newEdge = {...params, id: `${params.sourceHandle} + ${params.targetHandle}`} as EdgeType;
-      updatedGraph.edges.push(newEdge)
+      const newEdge = {
+        ...params,
+        id: `${params.sourceHandle} + ${params.targetHandle}`,
+      } as EdgeType;
+      updatedGraph.edges.push(newEdge);
+      updatedGraph.nodes = autoLayout(prevGraph.nodes, updatedGraph.edges);
 
       return updatedGraph;
-    }); 
-  }
+    });
+  };
 
   const onEdgesDelete = (edges: Edge<any>[]) => {
     setGraph((prevGraph?: GraphType) => {
@@ -55,36 +54,18 @@ function Flow({ graph, setGraph }: FlowProps) {
         return undefined;
       }
 
-      const deletedEdgeIds = edges.map(x=>x.id)
+      const deletedEdgeIds = edges.map((x) => x.id);
 
       const updatedGraph = { ...prevGraph }; // TODO: correct way to copy?
-      console.log('Deleting ', deletedEdgeIds);
-      updatedGraph.edges = prevGraph.edges.filter(edge => !deletedEdgeIds.includes(edge.id))
+      console.log("Deleting ", deletedEdgeIds);
+      updatedGraph.edges = prevGraph.edges.filter(
+        (edge) => !deletedEdgeIds.includes(edge.id)
+      );
+      updatedGraph.nodes = autoLayout(prevGraph.nodes, updatedGraph.edges);
 
       return updatedGraph;
-    }); 
-  }
-  // Update edges when graph changes
-  // useEffect(() => {
-  //   if (graph?.edges !== undefined) {
-  //     setEdges(graph?.edges);
-  //   }
-  // }, [graph]);
-
-  // // Update graph when edges change (i.e. when edited)
-  // useEffect(() => {
-  //   setGraph((prevGraph?: GraphType) => {
-  //     if (prevGraph === undefined) {
-  //       console.log("Cannot update node on undefined graph.");
-  //       return undefined;
-  //     }
-
-  //     const updatedGraph = { ...prevGraph }; // TODO: correct way to copy?
-  //     updatedGraph.edges = edges as EdgeType[];
-
-  //     return updatedGraph;
-  //   });
-  // }, [edges]);
+    });
+  };
 
   const [reactFlowInstance, setReactFlowInstance] =
     useState<ReactFlowInstance | null>();
@@ -122,7 +103,7 @@ function Flow({ graph, setGraph }: FlowProps) {
     }
   }, [graph?.nodes.length]);
 
-  useEffect(() => console.log("Graph was updated", graph), [graph])
+  useEffect(() => console.log("Graph was updated", graph), [graph]);
   return (
     <ReactFlow
       nodes={graph?.nodes}
