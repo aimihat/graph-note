@@ -42,9 +42,13 @@ class GraphExecutor:
         self.logger.info(
             f"Executing {cell.uid}, with inputs {cell.in_ports}, and outputs {cell.out_ports}"
         )
+        
+        # Reset the cell output, before updating it with incoming messages.
+        cell.output = ""
 
         if validate_cell(self.dag, cell):
             exec_code = compile_cell(self.dag, cell)
+            print(exec_code, cell.code)
 
             update_cell_output_ = lambda msg: self.update_cell_output(cell, msg)
 
@@ -52,7 +56,7 @@ class GraphExecutor:
                 exec_code, output_hook=update_cell_output_
             )
         else:
-            raise Exception("The cell is not valid and cannot be run.")
+            raise Exception("Some of the cell's ins are unavailable.")
 
     def update_cell_output(self, cell, msg):
         # TODO: are there cases where a single execution produces both stderr and stdout?

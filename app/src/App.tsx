@@ -2,7 +2,15 @@ import React, { useEffect, useState } from "react";
 import LoadingButton from "@mui/lab/LoadingButton";
 import "./App.css";
 import Flow from "./components/graph_visualiser/graph";
-import { Box, Button, ButtonGroup, Grid, Toolbar } from "@mui/material";
+import {
+  Alert,
+  Box,
+  Button,
+  ButtonGroup,
+  Grid,
+  Snackbar,
+  Toolbar,
+} from "@mui/material";
 import {
   Add,
   AddCircle,
@@ -12,7 +20,7 @@ import {
 } from "@mui/icons-material";
 import NodeEditor from "./components/node_editor/editor";
 import { ReactFlowProvider } from "react-flow-renderer";
-import { GraphType, NodeType } from "./types";
+import { APIResponses, GraphType, NodeType } from "./types";
 import { addNode } from "./utils/graph_utils";
 import { deserialize_graph, serialize_graph } from "./utils/protobuf_utils";
 import { HotKeys, configure } from "react-hotkeys";
@@ -29,20 +37,29 @@ configure({
 
 function App() {
   const [graph, setGraph] = useState<GraphType>();
+  const [snackbarMessage, setSnackbarMessage] = useState<string>("");
+  const [snackbarOpen, setSnackbarOpen] = useState<boolean>(false);
   const [lastSaved, setLastSaved] = useState<Date>();
   const [busyRunning, setBusyRunning] = useState<boolean>(false);
   const [busySaving, setBusySaving] = useState<boolean>(false);
 
   // Extracts a graph from the binary response and sets it as the current graph.
-  function handleUpdatedGraph(response: Response) {
-    response.arrayBuffer().then((responseBuffer) => {
-      deserialize_graph(
-        responseBuffer,
-        function (deserialised_graph: GraphType) {
-          setGraph((_) => deserialised_graph);
-        }
-      );
-    });
+  async function handleUpdatedGraph(response: Response) {
+    console.log("Response is", response)
+    if (response.status == APIResponses.Graph) {
+      response.arrayBuffer().then((responseBuffer) => {
+        deserialize_graph(
+          responseBuffer,
+          function (deserialised_graph: GraphType) {
+            setGraph((_) => deserialised_graph);
+          }
+        );
+      });
+    } else if (response.status == APIResponses.ErrorMessage) {
+      // Check if response is a message to display
+      setSnackbarMessage(await response.text())
+      setSnackbarOpen(true)
+    }
   }
 
   // Saves current graph and updates with the last compiled inputs/outputs.
@@ -104,32 +121,38 @@ function App() {
     RUN_CELL: runCell,
   };
 
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  };
+
   return (
     <HotKeys keyMap={keyMap} handlers={hotkeyHandlers} allowChanges={true}>
       <Box>
         <Grid container>
           <Grid item xs={6} position="relative">
-            
             {lastSaved ? (
-              <Box position="absolute" style={{width: "100%", top: -15,  zIndex: 999}}>
-                <Toolbar style={{float: "right", fontSize: 12}}>
-                Last saved:{" "}
-                {moment
-                  .utc(lastSaved.toUTCString())
-                  .local()
-                  .startOf("seconds")
-                  .toString()
-                  }
-                  </Toolbar>
+              <Box
+                position="absolute"
+                style={{ width: "100%", top: -15, zIndex: 999 }}
+              >
+                <Toolbar style={{ float: "right", fontSize: 12 }}>
+                  Last saved:{" "}
+                  {moment
+                    .utc(lastSaved.toUTCString())
+                    .local()
+                    .startOf("seconds")
+                    .toString()}
+                </Toolbar>
               </Box>
             ) : (
               <></>
             )}
-            
-            <Box position="absolute" style={{width: "100%", top: 20,  zIndex: 999}}>
-              <Toolbar
-                style={{ float: "right" }}
-              >
+
+            <Box
+              position="absolute"
+              style={{ width: "100%", top: 20, zIndex: 999 }}
+            >
+              <Toolbar style={{ float: "right" }}>
                 <ButtonGroup
                   variant="contained"
                   aria-label="outlined primary button group"
@@ -166,8 +189,20 @@ function App() {
                   </LoadingButton>
                 </ButtonGroup>
               </Toolbar>
-              <div style={{ float: "right",}}>
-            </div>
+              <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={3000}
+                anchorOrigin={{ vertical: "top", horizontal: "left" }}
+                onClose={handleSnackbarClose}
+              >
+                <Alert
+                  onClose={handleSnackbarClose}
+                  severity="error"
+                  sx={{ width: "100%" }}
+                >
+                  {snackbarMessage}
+                </Alert>
+              </Snackbar>
             </Box>
             <Box
               style={{ position: "relative", width: "100%", height: "100vh" }}

@@ -40,3 +40,8 @@ export type GraphType = {
   root?: NodeType; // TODO: not optional.
   selectedCell?: string;
 };
+
+export enum APIResponses {
+  Graph = 200,
+  ErrorMessage = 206
+}

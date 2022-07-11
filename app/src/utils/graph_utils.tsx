@@ -44,7 +44,7 @@ export function updateNode(
 }
 
 export function addNode(setGraph: SetGraphType) {
-  const newNodeIdPrefix = "new-node-";
+  const newNodeIdPrefix = "new_node_";
   const newNodeId = newNodeIdPrefix + Math.random().toString(36).slice(2, 7);
   const newEmptyNode: NodeType = {
     id: newNodeId,

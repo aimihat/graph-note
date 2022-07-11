@@ -31,7 +31,6 @@ interface NodeEditorProps {
 // 	}
 // };
 
-
 function NodeEditor({ node, setGraph }: NodeEditorProps) {
   const editorRef = useRef(null);
 
@@ -45,19 +44,16 @@ function NodeEditor({ node, setGraph }: NodeEditorProps) {
   }
 
   // Display cell output.
-  let cell_output = <></>;
-  if (node.data.output) {
-    cell_output = (
-      <Box sx={{ my: 2 }}>
-        <Alert severity="info">
-          <AlertTitle>
-            Output <i>(5hrs ago)</i>
-          </AlertTitle>
-          <Ansi>{node.data.output}</Ansi>
-        </Alert>
-      </Box>
-    );
-  }
+  let cell_output = (
+    <Box sx={{ my: 2 }}>
+      <Alert severity="info">
+        <AlertTitle>
+          Output <i>(5hrs ago)</i>
+        </AlertTitle>
+        <Ansi>{node.data.output ?? ""}</Ansi>
+      </Alert>
+    </Box>
+  );
 
   return (
     <Container>
@@ -69,13 +65,12 @@ function NodeEditor({ node, setGraph }: NodeEditorProps) {
           size="small"
           value={node.id}
           onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-            updateNode(node?.id, {id: event.target.value}, setGraph);
+            updateNode(node?.id, { id: event.target.value }, setGraph);
             setGraph((prevGraph?: GraphType) => {
-              if (prevGraph === undefined)
-                return undefined
+              if (prevGraph === undefined) return undefined;
               const updatedGraph = { ...prevGraph };
               updatedGraph.selectedCell = event.target.value;
-              return updatedGraph
+              return updatedGraph;
             });
           }}
         />
@@ -86,12 +81,12 @@ function NodeEditor({ node, setGraph }: NodeEditorProps) {
           defaultLanguage="python"
           value={node.data.code}
           onChange={(code?: string) => {
-            updateNode(node?.id, {data: {code: code}}, setGraph)
+            updateNode(node?.id, { data: { code: code } }, setGraph);
           }}
         />
       </Box>
       <Divider></Divider>
-      
+
       <pre>{cell_output}</pre>
     </Container>
   );

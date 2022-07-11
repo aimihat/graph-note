@@ -22,12 +22,13 @@ function parse_message(deserialized_message: GraphMessageType): GraphType {
         },
         width: 150,
         height: 50,
-        selected: cell.uid === selectedCell
+        selected: cell.uid === selectedCell,
       };
     })
   );
 
   // Parse edges (can be made more efficient by caching port -> nodeid map)
+  console.log(deserialized_message.connections)
   const edges = deserialized_message.connections.map((conn: any) => {
     return {
       id: `${conn.fromPort.uid} + ${conn.toPort.uid}`,
@@ -88,24 +89,30 @@ export function serialize_graph(
         uid: node.id,
         code: node.data.code,
         inPorts:
-          node.data.inputPorts?.map(p => root.lookupType("Port").create(p)) ?? [],
+          node.data.inputPorts?.map((p) => root.lookupType("Port").create(p)) ??
+          [],
         outPorts:
-          node.data.outputPorts?.map(p => root.lookupType("Port").create(p)) ?? [],
+          node.data.outputPorts?.map((p) =>
+            root.lookupType("Port").create(p)
+          ) ?? [],
         output: node.data.output,
       })
     );
 
-    console.log(protoNodes)
+    const allPorts = graph.nodes.flatMap((node) =>
+      (node.data.inputPorts ?? []).concat(node.data.outputPorts ?? [])
+    );
 
+    console.log(graph.edges, allPorts)
     // Create edges
     const protoConnections = graph.edges.map((edge) =>
       root.lookupType("Connection").create({
         fromPort: root
           .lookupType("Port")
-          .create({ uid: edge.sourceHandle, name: edge.source }),
+          .create({ uid: edge.sourceHandle, name: allPorts.find(p => p.uid == edge.sourceHandle)!.name }),
         toPort: root
           .lookupType("Port")
-          .create({ uid: edge.targetHandle, name: edge.target }),
+          .create({ uid: edge.targetHandle, name: allPorts.find(p => p.uid == edge.targetHandle)!.name }),
       })
     );
 
@@ -113,7 +120,7 @@ export function serialize_graph(
     const graphMessage = Graph.create({
       cells: protoNodes,
       connections: protoConnections,
-      selectedCell: graph.selectedCell
+      selectedCell: graph.selectedCell,
     });
 
     // TODO: handle root node.
