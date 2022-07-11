@@ -77,7 +77,7 @@ function NodeEditor({ node, setGraph }: NodeEditorProps) {
       </Box>
       <Box sx={{ my: 2 }}>
         <Editor
-          height="60vh"
+          height="55vh"
           defaultLanguage="python"
           value={node.data.code}
           onChange={(code?: string) => {
@@ -87,7 +87,7 @@ function NodeEditor({ node, setGraph }: NodeEditorProps) {
       </Box>
       <Divider></Divider>
 
-      <pre>{cell_output}</pre>
+      <pre style={{height: "30vh", overflow: "scroll"}}>{cell_output}</pre>
     </Container>
   );
 }
