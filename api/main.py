@@ -8,16 +8,14 @@ POST /run_cell (cell_id) -> runs the cell & returns updated cell (with output).
 future: run full dag, with websocket updates.
 """
 
-import enum
-from fastapi import FastAPI, File, Response, UploadFile, status
+from fastapi import FastAPI, Response
 from fastapi.responses import PlainTextResponse
 from fastapi.middleware.cors import CORSMiddleware
 from execution.helpers.graph_helpers import detect_in_ports
 from execution.kernel.launcher import CONNECT_FILE_PATH
 import logging
-from pydantic import BaseModel
 import base64
-from google.protobuf.json_format import MessageToJson
+from .types import RequestBodyGraph, APIResponses
 
 logger = logging.getLogger()
 app = FastAPI()
@@ -33,12 +31,7 @@ client.load_connection_file(str(CONNECT_FILE_PATH))
 client.start_channels()
 
 
-class APIResponses(enum.Enum):
-    UpdatedGraph = 200
-    ErrorMessage = 206
-
-
-DAGBOOK_PATH = "dagbooks/test_dag.gnote"
+DAGBOOK_PATH = "examples/test_dag.gnote"
 
 # Initialize the graph runner.
 with open(DAGBOOK_PATH, "rb") as f:
@@ -69,15 +62,11 @@ def read_graph(response: Response):
     return Response(runner.dag.SerializeToString())
 
 
-class Item(BaseModel):
-    b64_graph: str
-
-
 # TODO: open websocket connection for continual updates from the kernel.
 
 
 @app.post("/save_graph")
-def save_graph(body: Item, response: Response):
+def save_graph(body: RequestBodyGraph, response: Response):
     """Compile & save the dag, returns updated proto (with latest in/out)."""
 
     req_graph = graph_pb2.Graph()
