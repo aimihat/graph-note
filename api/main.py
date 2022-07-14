@@ -40,7 +40,7 @@ with open(DAGBOOK_PATH, "rb") as f:
     runner = GraphExecutor(client, test_graph)
 
 # Prepare the kernel for execution.
-asyncio.run(runner.init_kernel())
+asyncio.run(runner.initialize())
 asyncio.run(runner.run_root(test_graph.root))
 
 

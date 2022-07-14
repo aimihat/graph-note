@@ -29,24 +29,35 @@ def detect_out_ports(cell: graph_pb2.Cell):
     ...
 
 
+def reset_out_ports(graph: graph_pb2.Graph) -> None:
+    """Resets all output ports in the graph to have no runtime value."""
+    for cell in graph.cells:
+        for port in cell.out_ports:
+            port.last_updated = 0
+
+
 def validate_root(root: graph_pb2.Cell) -> bool:
     return True  # TODO
 
 
 def validate_cell(dag: graph_pb2.Graph, cell: graph_pb2.Cell) -> bool:
-    """Assert that the cell's input ports are connected. Disconnected outputs can be ignored."""
+    """Validates that a cell is able to be executed."""
 
-    # TODO: check that the cell inputs have a runtime value
-
-    # Ensure ports are up-to-date.
+    # Ensure input ports are up-to-date.
     detect_in_ports(cell)
 
-    if len(cell.in_ports) == 0:
-        return True
-
     # TODO: prune connections before checking for validity.
+    # Check that the cell's input ports are connected. Disconnected outputs can be ignored.
     connected_inputs = [c.to_port.uid for c in dag.connections]
-    return all(p.uid in connected_inputs for p in cell.in_ports)
+    if not all(p.uid in connected_inputs for p in cell.in_ports):
+        return False
+
+    # Check that the cell inputs have a runtime value
+    for c in dag.connections:
+        if c.to_port.uid in connected_inputs and c.from_port.last_updated == 0:
+            return False
+
+    return True
 
 
 # @Future

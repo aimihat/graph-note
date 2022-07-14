@@ -3,6 +3,7 @@ syntax = "proto3";
 message Port {
   string uid = 1;
   string name = 2;
+  optional int32 last_updated = 3; // utc_timestamp
 }
 
 message Connection {
@@ -29,5 +30,5 @@ message Graph {
   repeated Cell cells = 2;
   repeated Connection connections = 3;
 
-  optional string selected_cell = 4; 
+  optional string selected_cell = 4;
 }

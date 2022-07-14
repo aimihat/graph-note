@@ -5,7 +5,11 @@ from typing import Any
 import jupyter_client
 
 from execution.helpers.code_helpers import compile_cell
-from execution.helpers.graph_helpers import validate_cell, validate_root
+from execution.helpers.graph_helpers import (
+    validate_cell,
+    validate_root,
+    reset_out_ports,
+)
 from execution.messages import definitions, parsers
 from execution.kernel import initialization
 from proto.classes import graph_pb2
@@ -19,10 +23,14 @@ class GraphExecutor:
         self.client = client
         self.logger = logging.getLogger()
 
-    async def init_kernel(self):
+    async def initialize(self):
         # TODO: this shouldn't be done here.
         self.logger.info("Initializing kernel.")
         await self.client._async_execute_interactive(inspect.getsource(initialization))
+
+        self.logger.info("Initializing graph.")
+        # Reset all output ports.
+        reset_out_ports(self.dag)
 
     async def run_root(self, root: graph_pb2.Cell) -> None:
         logging.info("Executing root node.")

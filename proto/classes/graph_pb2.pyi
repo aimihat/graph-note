@@ -15,17 +15,41 @@ class Port(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
     UID_FIELD_NUMBER: builtins.int
     NAME_FIELD_NUMBER: builtins.int
+    LAST_UPDATED_FIELD_NUMBER: builtins.int
     uid: typing.Text
     name: typing.Text
+    last_updated: builtins.int
+    """utc_timestamp"""
+
     def __init__(
         self,
         *,
         uid: typing.Text = ...,
         name: typing.Text = ...,
+        last_updated: typing.Optional[builtins.int] = ...,
     ) -> None: ...
+    def HasField(
+        self,
+        field_name: typing_extensions.Literal[
+            "_last_updated", b"_last_updated", "last_updated", b"last_updated"
+        ],
+    ) -> builtins.bool: ...
     def ClearField(
-        self, field_name: typing_extensions.Literal["name", b"name", "uid", b"uid"]
+        self,
+        field_name: typing_extensions.Literal[
+            "_last_updated",
+            b"_last_updated",
+            "last_updated",
+            b"last_updated",
+            "name",
+            b"name",
+            "uid",
+            b"uid",
+        ],
     ) -> None: ...
+    def WhichOneof(
+        self, oneof_group: typing_extensions.Literal["_last_updated", b"_last_updated"]
+    ) -> typing.Optional[typing_extensions.Literal["last_updated"]]: ...
 
 global___Port = Port
 
