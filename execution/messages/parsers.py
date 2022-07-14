@@ -67,5 +67,5 @@ def parse_content(message: definitions.Message) -> Optional[definitions.Content]
             traceback="\n".join(message.content["traceback"]),
             error_value=message.content["evalue"],
         )
-    else:
-        raise Exception("This shouldn't happen")
+
+    raise Exception("The message contents could not be parsed", message)

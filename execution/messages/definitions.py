@@ -25,7 +25,7 @@ class CellError:
 
 RawContent = Dict[str, Any]
 
-Content = Optional[Union[RawContent, CellStdout, CellStderr]]
+Content = Optional[Union[RawContent, CellStdout, CellStderr, CellError]]
 
 
 @dataclasses.dataclass

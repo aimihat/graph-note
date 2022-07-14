@@ -109,13 +109,11 @@ dag.root.CopyFrom(cell_root)
 dag.connections.extend(connections)
 
 # Write the new dag back to disk.
-f = open("test_dag.gnote", "wb")
-f.write(dag.SerializeToString())
-f.close()
+with open("test_dag.gnote", "wb") as f:
+    f.write(dag.SerializeToString())
 
 # For debugging purposes, save as json also
 
 json_obj = MessageToJson(dag)
-f = open("test_dag.json", "w")
-f.write(json_obj)
-f.close()
+with open("test_dag.json", "w") as f:
+    f.write(json_obj)

@@ -62,9 +62,6 @@ def read_graph(response: Response):
     return Response(runner.dag.SerializeToString())
 
 
-# TODO: open websocket connection for continual updates from the kernel.
-
-
 @app.post("/save_graph")
 def save_graph(body: RequestBodyGraph, response: Response):
     """Compile & save the dag, returns updated proto (with latest in/out)."""
@@ -97,5 +94,5 @@ async def run_cell(cell_uid: str, response: Response):
                 )
 
     # TODO: update output ports
-    response.status_code = APIResponses.UpdatedGraph
+    response.status_code = APIResponses.UpdatedGraph.value
     return Response(runner.dag.SerializeToString())

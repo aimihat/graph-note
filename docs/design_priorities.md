@@ -18,4 +18,7 @@ Backlog:
 - Improve packaging (e.g. run command, download / upload notebook).
 - Detect inputs implicitly, as they are undefined variables.
 
+Ideas for future:
+- Open websocket connection for continual updates from the kernel.
+
 Completed:
