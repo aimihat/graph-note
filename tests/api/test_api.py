@@ -1,6 +1,7 @@
 import pytest
 
-class TestSaveGraph():
+
+class TestSaveGraph:
     def test_returns_updated_graph():
         ...
 
@@ -13,7 +14,8 @@ class TestSaveGraph():
     def test_invalid_request_raises():
         ...
 
-class TestRunCell():
+
+class TestRunCell:
     def test_runs_selected_cell():
         ...
 

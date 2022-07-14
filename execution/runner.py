@@ -42,7 +42,7 @@ class GraphExecutor:
         self.logger.info(
             f"Executing {cell.uid}, with inputs {cell.in_ports}, and outputs {cell.out_ports}"
         )
-        
+
         # Reset the cell output, before updating it with incoming messages.
         cell.output = ""
 

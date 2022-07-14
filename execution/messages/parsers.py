@@ -10,7 +10,8 @@ class HandledMessages(enum.Enum):
 
 
 def parse_ansi_escape(text):
-    ansi_escape = re.compile(r'''
+    ansi_escape = re.compile(
+        r"""
         \x1B  # ESC
         (?:   # 7-bit C1 Fe (except CSI)
             [@-Z\\-_]
@@ -20,8 +21,11 @@ def parse_ansi_escape(text):
             [ -/]*  # Intermediate bytes
             [@-~]   # Final byte
         )
-    ''', re.VERBOSE)
-    return ansi_escape.sub('', text)
+    """,
+        re.VERBOSE,
+    )
+    return ansi_escape.sub("", text)
+
 
 def parse_message(message: Dict[str, Any]) -> definitions.Message:
     raw_message = definitions.Message(

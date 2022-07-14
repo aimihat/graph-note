@@ -15,6 +15,7 @@ class CellStderr:
     name: str
     text: str
 
+
 @dataclasses.dataclass
 class CellError:
     error: str

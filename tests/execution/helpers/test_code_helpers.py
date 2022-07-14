@@ -8,8 +8,7 @@ P2 = graph_pb2.Port(uid="2", name="x_input")
 # A simple test DAG with 1 cell and 1 dependency.
 TEST_CELL = graph_pb2.Cell()
 TEST_CELL.uid = "test_cell"
-TEST_CELL.code = \
-"""x = INPUT["x_input"]
+TEST_CELL.code = """x = INPUT["x_input"]
 y = x"""
 TEST_CELL.in_ports.extend([P2])
 TEST_DAG = graph_pb2.Graph()
@@ -19,17 +18,15 @@ TEST_DAG.connections.extend(
         graph_pb2.Connection(from_port=P1, to_port=P2),
     ]
 )
-EXPECTED_COMPILED_TEST_CELL = \
-"""def test_cell(x_input):
+EXPECTED_COMPILED_TEST_CELL = """def test_cell(x_input):
 	x = x_input
 	y = x
 test_cell(x_input=CELL_OUTPUTS['x_source'])"""
 
-# Same as above, with re-use of the input dependency 
+# Same as above, with re-use of the input dependency
 TEST_CELL2 = graph_pb2.Cell()
 TEST_CELL2.uid = "test_cell"
-TEST_CELL2.code = \
-"""x = INPUT["x_input"]
+TEST_CELL2.code = """x = INPUT["x_input"]
 y = x
 z = INPUT["x_input"]"""
 TEST_CELL2.in_ports.extend([P2])
@@ -40,12 +37,12 @@ TEST_DAG2.connections.extend(
         graph_pb2.Connection(from_port=P1, to_port=P2),
     ]
 )
-EXPECTED_COMPILED_TEST_CELL2 = \
-"""def test_cell(x_input):
+EXPECTED_COMPILED_TEST_CELL2 = """def test_cell(x_input):
 	x = x_input
 	y = x
 	z = x_input
 test_cell(x_input=CELL_OUTPUTS['x_source'])"""
+
 
 def test_cell_compilation():
     """Checks that a validated cell gets compiled as expected
@@ -54,6 +51,7 @@ def test_cell_compilation():
 
     compiled_cell = code_helpers.compile_cell(TEST_DAG, TEST_CELL)
     assert compiled_cell == EXPECTED_COMPILED_TEST_CELL
+
 
 def test_cell_compilation_with_input_reuse():
     """Checks that a validated cell gets compiled as expected

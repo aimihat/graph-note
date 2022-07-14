@@ -11,7 +11,7 @@ if __name__ == "__main__":
     kernel_launcher.start_kernel()
 
     # Start a child process to run the UI.
-    subprocess.Popen(["npm","start","--prefix","app"])
+    subprocess.Popen(["npm", "start", "--prefix", "app"])
 
     # Start the FastAPI server.
     uvicorn.run(app, host="0.0.0.0", port=8000)

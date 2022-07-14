@@ -13,9 +13,9 @@ Backlog:
     - For code editing -> re-use jupyter code.
     - Code editing as a window that can be positioned/sized?
     - Edit cell name directly on the cell: when selected, turns into an input.
+    - Loading indicator on the cell itself.
 - Shortcuts to run / save / etc. Command palette?
 - Improve packaging (e.g. run command, download / upload notebook).
 - Detect inputs implicitly, as they are undefined variables.
 
 Completed:
-

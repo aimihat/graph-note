@@ -4,6 +4,7 @@ from execution.kernel import initialization
 from execution.runner import GraphExecutor
 import asyncio
 
+
 class TestRunner:
     @pytest.mark.asyncio
     def test_init_kernel_runs_initialisation(self, mocker):
@@ -12,11 +13,13 @@ class TestRunner:
         mocked_client._async_execute_interactive = mocker.MagicMock()
         runner = GraphExecutor(mocked_client, None)
         asyncio.run(runner.init_kernel())
-        mocked_client._async_execute_interactive.assert_called_with(initialization_src + ' a')
+        mocked_client._async_execute_interactive.assert_called_with(
+            initialization_src + " a"
+        )
 
     def test_run_root(self):
         ...
-        # test that root is validated 
+        # test that root is validated
 
     def test_run_cell_validates(self):
         ...
