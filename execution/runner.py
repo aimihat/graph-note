@@ -6,6 +6,7 @@ import jupyter_client
 
 from execution.helpers.code_helpers import compile_cell
 from execution.helpers.graph_helpers import (
+    ValidationResult,
     validate_cell,
     validate_root,
     reset_out_ports,
@@ -54,7 +55,8 @@ class GraphExecutor:
         # Reset the cell output, before updating it with incoming messages.
         cell.output = ""
 
-        if validate_cell(self.dag, cell):
+        cell_validation = validate_cell(self.dag, cell)
+        if cell_validation == ValidationResult.CAN_BE_EXECUTED:
             exec_code = compile_cell(self.dag, cell)
             print(exec_code, cell.code)
 
@@ -63,8 +65,12 @@ class GraphExecutor:
             await self.client._async_execute_interactive(
                 exec_code, output_hook=update_cell_output_
             )
+        elif cell_validation == ValidationResult.DISCONNECTED_INPUT:
+            raise Exception("Not all cell inputs are connected.")
+        elif cell_validation == ValidationResult.INPUT_MISSING_RUNTIME_VAL:
+            raise Exception("Not all cell inputs have a runtime value.")
         else:
-            raise Exception("Some of the cell's ins are unavailable.")
+            raise Exception("Unknown cell validation error.")
 
     def update_cell_output(self, cell, msg):
         # TODO: are there cases where a single execution produces both stderr and stdout?

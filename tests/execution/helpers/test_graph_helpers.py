@@ -1,15 +1,14 @@
 from copy import deepcopy
 from google.protobuf.json_format import MessageToJson
 from execution.helpers.graph_helpers import (
+    ValidationResult,
     detect_in_ports,
     reset_out_ports,
     validate_cell,
 )
 from proto.classes import graph_pb2
-from execution.helpers import code_helpers
 
 from google.protobuf.json_format import MessageToJson
-from google.protobuf import timestamp_pb2
 from proto.classes import graph_pb2
 from execution.helpers import code_helpers
 import pytest
@@ -24,7 +23,7 @@ def single_cell_dag():
     y = x"""
 
     # Input ports
-    P1 = graph_pb2.Port(uid="1", name="x_source")
+    P1 = graph_pb2.Port(uid="1", name="x_source", last_updated=int(time.time()))
     P2 = graph_pb2.Port(uid="2", name="x_input")
     TEST_CELL.in_ports.extend([P2])
     # Output ports
@@ -61,29 +60,35 @@ class TestCellValidation:
 
         # Delete all DAG connections
         del single_cell_dag.connections[:]
-        assert validate_cell(single_cell_dag, cell) == False
+        assert (
+            validate_cell(single_cell_dag, cell) == ValidationResult.DISCONNECTED_INPUT
+        )
 
     def test_fails_for_disconnected_input2(self, single_cell_dag):
         cell = single_cell_dag.cells[0]
 
         # Rename input port so that it doesn't match connection
         cell.in_ports[0].name = "bad_name"
-        assert validate_cell(single_cell_dag, cell) == False
+        assert (
+            validate_cell(single_cell_dag, cell) == ValidationResult.DISCONNECTED_INPUT
+        )
 
-    def test_succeed_for_connected_inputs(self, single_cell_dag):
+    def test_succeeds_for_connected_inputs(self, single_cell_dag):
         cell = single_cell_dag.cells[0]
-        assert validate_cell(single_cell_dag, cell) == True
+        assert validate_cell(single_cell_dag, cell) == ValidationResult.CAN_BE_EXECUTED
 
-    def test_fails_if_input_missing_runtime_value(self):
-        ...
-
-    def test_fails_for_input_without_runtime_value(self, single_cell_dag):
+    def test_fails_for_connected_input_without_runtime_value(self, single_cell_dag):
         cell = single_cell_dag.cells[0]
-        del cell.in_ports[:]
-        assert len(cell.in_ports) == 0
-        cell.code = cell.code.replace("INPUT", "")
 
-        assert validate_cell(single_cell_dag, cell) == True
+        # Set cell's ins to have no runtime value
+        for c in single_cell_dag.connections:
+            if c.to_port in cell.in_ports:
+                c.from_port.last_updated = 0
+
+        assert (
+            validate_cell(single_cell_dag, cell)
+            == ValidationResult.INPUT_MISSING_RUNTIME_VAL
+        )
 
     def test_succeeds_if_no_inputs(self, single_cell_dag):
         cell = single_cell_dag.cells[0]
@@ -91,7 +96,7 @@ class TestCellValidation:
         assert len(cell.in_ports) == 0
         cell.code = cell.code.replace("INPUT", "")
 
-        assert validate_cell(single_cell_dag, cell) == True
+        assert validate_cell(single_cell_dag, cell) == ValidationResult.CAN_BE_EXECUTED
 
 
 class TestDetectInPorts:

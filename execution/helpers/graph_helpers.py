@@ -2,6 +2,7 @@ import uuid
 
 from execution.helpers import code_helpers
 from proto.classes import graph_pb2
+import enum
 
 
 def detect_in_ports(cell: graph_pb2.Cell) -> None:
@@ -40,7 +41,13 @@ def validate_root(root: graph_pb2.Cell) -> bool:
     return True  # TODO
 
 
-def validate_cell(dag: graph_pb2.Graph, cell: graph_pb2.Cell) -> bool:
+class ValidationResult(enum.Enum):
+    CAN_BE_EXECUTED = 0
+    DISCONNECTED_INPUT = 1
+    INPUT_MISSING_RUNTIME_VAL = 2
+
+
+def validate_cell(dag: graph_pb2.Graph, cell: graph_pb2.Cell) -> ValidationResult:
     """Validates that a cell is able to be executed."""
 
     # Ensure input ports are up-to-date.
@@ -50,14 +57,15 @@ def validate_cell(dag: graph_pb2.Graph, cell: graph_pb2.Cell) -> bool:
     # Check that the cell's input ports are connected. Disconnected outputs can be ignored.
     connected_inputs = [c.to_port.uid for c in dag.connections]
     if not all(p.uid in connected_inputs for p in cell.in_ports):
-        return False
+        return ValidationResult.DISCONNECTED_INPUT
 
     # Check that the cell inputs have a runtime value
+    in_port_uids = [p.uid for p in cell.in_ports]
     for c in dag.connections:
-        if c.to_port.uid in connected_inputs and c.from_port.last_updated == 0:
-            return False
+        if c.to_port.uid in in_port_uids and c.from_port.last_updated == 0:
+            return ValidationResult.INPUT_MISSING_RUNTIME_VAL
 
-    return True
+    return ValidationResult.CAN_BE_EXECUTED
 
 
 # @Future
