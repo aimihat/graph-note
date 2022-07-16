@@ -25,6 +25,10 @@ def compile_cell(dag: graph_pb2.Graph, cell: graph_pb2.Cell) -> str:
     for ref in inputs:
         exec_code = exec_code.replace(f'{INPUT_VAR_TAG}["{ref}"]', ref)
 
+    # If no code was provided, make sure we don't throw an error
+    if not exec_code.strip():
+        exec_code = "pass"
+
     # Wrap cell in a function scope
     args = ", ".join(inputs)
     function = f"""def {cell.uid}({args}):\n{indent_code(exec_code)}"""

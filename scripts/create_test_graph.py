@@ -80,8 +80,8 @@ for ax, image, prediction in zip(axes, INPUT["X_test"], INPUT["predicted"]):
     ax.set_title(f"Prediction: {prediction}")
 
 print(
-    f'Classification report for classifier {INPUT["clf"]}:\n'
-    f'{metrics.classification_report(INPUT["y_test"], INPUT["predicted"])}\n'
+    f'Classification report for classifier {INPUT["clf"]}:',
+    f'{metrics.classification_report(INPUT["y_test"], INPUT["predicted"])}'
 )
 """
 cell_visualize.in_ports.extend(

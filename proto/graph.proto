@@ -27,8 +27,17 @@ message Cell {
   repeated Port out_ports = 5;
   // cell output text, displayed in the UI
   optional string output = 6;
-  // @future: last_executed;
+  // utc timestamp for the last time the cell was successfully executed (successfully or not).
+  optional int32 last_executed = 7;
   // @future: last_execution_status; (success / failure)
+
+  // this status code is used to colour code cells
+  enum DependencyStatus {
+    NOT_EXECUTED = 0;
+    INPUT_PORT_OUTDATED = 1;
+    UP_TO_DATE = 2;
+  }
+  optional DependencyStatus dependency_status = 8;
 }
 
 message Graph {

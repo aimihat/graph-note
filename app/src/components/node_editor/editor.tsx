@@ -45,7 +45,7 @@ function NodeEditor({ node, setGraph }: NodeEditorProps) {
 
   // Display cell output.
   let cell_output = (
-      <Alert severity="info">
+      <Alert >
         <AlertTitle>
           Output <i>(5hrs ago)</i>
         </AlertTitle>

@@ -1,5 +1,6 @@
 import inspect
 import logging
+import time
 from typing import Any, Dict
 
 import jupyter_client
@@ -75,6 +76,9 @@ class GraphExecutor:
                 ),
             )
 
+            cell.last_executed = int(time.time())
+            self.update_dependency_statuses(self.dag, last_cell=cell)
+
         elif cell_validation == ValidationResult.DISCONNECTED_INPUT:
             raise Exception("Not all cell inputs are connected.")
         elif cell_validation == ValidationResult.INPUT_MISSING_RUNTIME_VAL:
@@ -82,7 +86,8 @@ class GraphExecutor:
         else:
             raise Exception("Unknown cell validation error.")
 
-    def update_cell_output(self, cell, msg):
+    def update_cell_output(self, cell: graph_pb2.Cell, msg: Dict[str, Any]) -> None:
+        # TODO: move this elsewhere
         # TODO: are there cases where a single execution produces both stderr and stdout?
         parsed_message = parsers.parse_message(msg)
 
@@ -94,3 +99,84 @@ class GraphExecutor:
             cell.output = f"{parsed_message.content.error}: {parsed_message.content.error_value}\n{parsed_message.content.traceback}"
         else:
             logging.warning("Unknown output type.")
+
+    def update_dependency_statuses(
+        self, dag: graph_pb2.Graph, last_cell: graph_pb2.Cell
+    ) -> None:
+        """This method updates a cell's dependency status.
+
+        The status can be either:
+        - NOT_EXECUTED
+        - INPUT_PORT_OUTDATED -> at least one of the cell's ancestors was executed after the cell
+        - UP_TO_DATE -> all of the cell's ancestors were executed earlier than the cell
+
+        Note: after a cell is executed, we only need to update that cell and its descendents.
+        """
+
+        # TODO: separate UP_TO_DATE into success/failure states
+        def outdate_descendents(cell: graph_pb2.Cell) -> None:
+            out_uids = [p.uid for p in cell.out_ports]
+            descendant_ports = set(
+                c.target_uid for c in dag.connections if c.source_uid in out_uids
+            )
+            descendant_cells = [
+                c
+                for c in dag.cells
+                if descendant_ports.intersection(p_.uid for p_ in c.in_ports)
+            ]
+            for c in descendant_cells:
+                if c.dependency_status == graph_pb2.Cell.UP_TO_DATE:
+                    c.dependency_status = graph_pb2.Cell.INPUT_PORT_OUTDATED
+                    outdate_descendents(c)
+                elif c.dependency_status in [
+                    graph_pb2.Cell.NOT_EXECUTED,
+                    graph_pb2.Cell.INPUT_PORT_OUTDATED,
+                ]:
+                    pass
+                else:
+                    raise Exception(
+                        f"Unhandled dependency status {c.dependency_status}"
+                    )
+
+        def ancestors_up_to_date(cell: graph_pb2.Cell) -> bool:
+            in_uids = [p.uid for p in cell.in_ports]
+            ancestor_ports = set(
+                [c.source_uid for c in dag.connections if c.target_uid in in_uids]
+            )
+            ancestor_cells = [
+                c
+                for c in dag.cells
+                if ancestor_ports.intersection(p_.uid for p_ in c.out_ports)
+            ]
+
+            if not ancestor_cells:
+                return True
+
+            if any(
+                c.dependency_status != graph_pb2.Cell.UP_TO_DATE for c in ancestor_cells
+            ):
+                return False
+
+            return all(ancestors_up_to_date(c) for c in ancestor_cells)
+
+        if last_cell.dependency_status == graph_pb2.Cell.NOT_EXECUTED:
+            # None of the descendents could have been previously executed.
+            # Therefore, we only need to update the cell itself.
+            if ancestors_up_to_date(last_cell):
+                last_cell.dependency_status = graph_pb2.Cell.UP_TO_DATE
+            else:
+                last_cell.dependency_status = graph_pb2.Cell.INPUT_PORT_OUTDATED
+        elif last_cell.dependency_status == graph_pb2.Cell.INPUT_PORT_OUTDATED:
+            # If the cell was outdated, that means its descents are also outdated.
+            # Therefore, we only need to update the cell itself.
+            if ancestors_up_to_date(last_cell):
+                last_cell.dependency_status = graph_pb2.Cell.UP_TO_DATE
+        elif last_cell.dependency_status == graph_pb2.Cell.UP_TO_DATE:
+            # We update all descendents to be out-of-date, or not-executed.
+            outdate_descendents(last_cell)
+        else:
+            raise Exception(
+                f"Unhandled dependency status {last_cell.dependency_status}"
+            )
+
+        # TODO: move this elsewhere

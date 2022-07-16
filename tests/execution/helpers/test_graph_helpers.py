@@ -9,6 +9,7 @@ from execution.helpers.graph_helpers import (
     update_out_ports,
     validate_cell,
 )
+from execution.runner import GraphExecutor
 from proto.classes import graph_pb2
 
 from proto.classes import graph_pb2
@@ -47,8 +48,7 @@ def source_port():
 
 @pytest.fixture
 def single_cell_dag(source_port):
-    TEST_CELL = graph_pb2.Cell()
-    TEST_CELL.uid = "test_cell"
+    TEST_CELL = graph_pb2.Cell(uid="test_cell")
     TEST_CELL.code = """x = INPUT["x_input"]
     y = x"""
 
@@ -224,10 +224,8 @@ class TestUpdateOutPorts:
         )
 
         state_step_1, state_step_2 = executor_state
-        print("step 1", single_cell_dag)
         stdout_metadata_msg = executor_state_to_meta_msg(state_step_2)
         update_out_ports(state_step_1, cell, stdout_metadata_msg)
-        print("step 2", single_cell_dag)
         port_mapping = graph_port_mapping(single_cell_dag)
         assert (
             port_mapping[single_cell_dag.connections[-1].source_uid].last_updated == 100
@@ -274,3 +272,150 @@ class TestResetOutPorts:
         assert single_cell_dag.SerializeToString(
             deterministic=True
         ) == input_dag.SerializeToString(deterministic=True)
+
+
+class TestUpdateDependencyStatuses:
+    def test_does_not_affect_non_executed(self):
+        p1 = graph_pb2.Port(uid="1")
+        p2 = graph_pb2.Port(uid="2")
+        p3 = graph_pb2.Port(uid="3")
+        p4 = graph_pb2.Port(uid="4")
+        p5 = graph_pb2.Port(uid="5")
+        p6 = graph_pb2.Port(uid="6")
+        c1 = graph_pb2.Cell(
+            uid="c1", dependency_status=graph_pb2.Cell.UP_TO_DATE, out_ports=[p1, p3]
+        )
+        c2 = graph_pb2.Cell(
+            uid="c2",
+            dependency_status=graph_pb2.Cell.UP_TO_DATE,
+            in_ports=[p2],
+            out_ports=[p5],
+        )
+        c3 = graph_pb2.Cell(
+            uid="c3", dependency_status=graph_pb2.Cell.UP_TO_DATE, in_ports=[p4]
+        )
+        c4 = graph_pb2.Cell(
+            uid="c4", dependency_status=graph_pb2.Cell.NOT_EXECUTED, in_ports=[p6]
+        )
+
+        d = graph_pb2.Graph(cells=[c1, c2, c3, c4])
+        d.connections.extend(
+            [
+                graph_pb2.Connection(source_uid=p1.uid, target_uid=p2.uid),
+                graph_pb2.Connection(source_uid=p3.uid, target_uid=p4.uid),
+                graph_pb2.Connection(source_uid=p5.uid, target_uid=p6.uid),
+            ]
+        )
+
+        runner = GraphExecutor(None, None)
+        runner.update_dependency_statuses(d, c1)
+        assert d.cells[0].dependency_status == graph_pb2.Cell.UP_TO_DATE
+        assert d.cells[1].dependency_status == graph_pb2.Cell.INPUT_PORT_OUTDATED
+        assert d.cells[2].dependency_status == graph_pb2.Cell.INPUT_PORT_OUTDATED
+        assert d.cells[3].dependency_status == graph_pb2.Cell.NOT_EXECUTED
+
+    def test_outdates_ancestors(self):
+        p1 = graph_pb2.Port(uid="1")
+        p2 = graph_pb2.Port(uid="2")
+        p3 = graph_pb2.Port(uid="3")
+        p4 = graph_pb2.Port(uid="4")
+        p5 = graph_pb2.Port(uid="5")
+        p6 = graph_pb2.Port(uid="6")
+        c1 = graph_pb2.Cell(
+            uid="c1", dependency_status=graph_pb2.Cell.UP_TO_DATE, out_ports=[p1, p3]
+        )
+        c2 = graph_pb2.Cell(
+            uid="c2",
+            dependency_status=graph_pb2.Cell.UP_TO_DATE,
+            in_ports=[p2],
+            out_ports=[p5],
+        )
+        c3 = graph_pb2.Cell(
+            uid="c3", dependency_status=graph_pb2.Cell.UP_TO_DATE, in_ports=[p4]
+        )
+        c4 = graph_pb2.Cell(
+            uid="c4", dependency_status=graph_pb2.Cell.UP_TO_DATE, in_ports=[p6]
+        )
+
+        d = graph_pb2.Graph(cells=[c1, c2, c3, c4])
+        d.connections.extend(
+            [
+                graph_pb2.Connection(source_uid=p1.uid, target_uid=p2.uid),
+                graph_pb2.Connection(source_uid=p3.uid, target_uid=p4.uid),
+                graph_pb2.Connection(source_uid=p5.uid, target_uid=p6.uid),
+            ]
+        )
+
+        runner = GraphExecutor(None, None)
+        runner.update_dependency_statuses(d, c1)
+        assert d.cells[0].dependency_status == graph_pb2.Cell.UP_TO_DATE
+        assert d.cells[1].dependency_status == graph_pb2.Cell.INPUT_PORT_OUTDATED
+        assert d.cells[2].dependency_status == graph_pb2.Cell.INPUT_PORT_OUTDATED
+        assert d.cells[3].dependency_status == graph_pb2.Cell.INPUT_PORT_OUTDATED
+
+    def test_works_for_non_executed_cells(self):
+        # non executed should become up-to-date, descendants unaffected
+        p1 = graph_pb2.Port(uid="1")
+        p2 = graph_pb2.Port(uid="2")
+        p3 = graph_pb2.Port(uid="3")
+        c1 = graph_pb2.Cell(
+            uid="c1", dependency_status=graph_pb2.Cell.NOT_EXECUTED, out_ports=[p1, p3]
+        )
+        c2 = graph_pb2.Cell(
+            uid="c2", dependency_status=graph_pb2.Cell.NOT_EXECUTED, in_ports=[p2]
+        )
+
+        d = graph_pb2.Graph(cells=[c1, c2])
+        d.connections.extend(
+            [
+                graph_pb2.Connection(source_uid=p1.uid, target_uid=p2.uid),
+            ]
+        )
+
+        runner = GraphExecutor(None, None)
+        runner.update_dependency_statuses(d, d.cells[0])
+        assert d.cells[0].dependency_status == graph_pb2.Cell.UP_TO_DATE
+        assert d.cells[1].dependency_status == graph_pb2.Cell.NOT_EXECUTED
+
+    def test_does_not_uptodate_if_any_ancestor_is_outofdate(self):
+        p1 = graph_pb2.Port(uid="1")
+        p2 = graph_pb2.Port(uid="2")
+        p3 = graph_pb2.Port(uid="3")
+        p4 = graph_pb2.Port(uid="4")
+        p5 = graph_pb2.Port(uid="5")
+        p6 = graph_pb2.Port(uid="6")
+        c1 = graph_pb2.Cell(
+            uid="c1", dependency_status=graph_pb2.Cell.UP_TO_DATE, out_ports=[p1, p3]
+        )
+        c2 = graph_pb2.Cell(
+            uid="c2",
+            dependency_status=graph_pb2.Cell.INPUT_PORT_OUTDATED,
+            in_ports=[p2],
+            out_ports=[p5],
+        )
+        c3 = graph_pb2.Cell(
+            uid="c3",
+            dependency_status=graph_pb2.Cell.INPUT_PORT_OUTDATED,
+            in_ports=[p4],
+        )
+        c4 = graph_pb2.Cell(
+            uid="c4",
+            dependency_status=graph_pb2.Cell.INPUT_PORT_OUTDATED,
+            in_ports=[p6],
+        )
+
+        d = graph_pb2.Graph(cells=[c1, c2, c3, c4])
+        d.connections.extend(
+            [
+                graph_pb2.Connection(source_uid=p1.uid, target_uid=p2.uid),
+                graph_pb2.Connection(source_uid=p3.uid, target_uid=p4.uid),
+                graph_pb2.Connection(source_uid=p5.uid, target_uid=p6.uid),
+            ]
+        )
+
+        runner = GraphExecutor(None, None)
+        runner.update_dependency_statuses(d, d.cells[-1])
+        assert d.cells[0].dependency_status == graph_pb2.Cell.UP_TO_DATE
+        assert d.cells[1].dependency_status == graph_pb2.Cell.INPUT_PORT_OUTDATED
+        assert d.cells[2].dependency_status == graph_pb2.Cell.INPUT_PORT_OUTDATED
+        assert d.cells[3].dependency_status == graph_pb2.Cell.INPUT_PORT_OUTDATED

@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { Handle, HandleType, Position } from "react-flow-renderer";
-import { NodeDataType, PortType } from "../../types";
+import { DependencyStatus, NodeDataType, PortType } from "../../types";
 
 interface CustomNodeProps {
   id: string;
@@ -28,16 +28,15 @@ function CustomHandle({
   }
 
   return (
-    // <div className={"custom-handle " + String(type)}>
-    
     <Handle
       type={type}
       style={{ top: String(topPosition) + "%" }}
       position={position}
       id={port.uid}
       isConnectable={true}
-    ><span>{port.name}</span></Handle>
-    
+    >
+      <span>{port.name}</span>
+    </Handle>
   );
 }
 
@@ -77,7 +76,7 @@ export default memo(({ id, data }: CustomNodeProps) => {
   let cellSize = { height: String(maxVerticalPorts) + "px" };
 
   return (
-    <div className="nodeContainer">
+    <div className={"nodeContainer " + DependencyStatus[data.dependencyStatus ?? 0]}>
       <div className="nodeHeader">{id}</div>
       <div className="nodeBody" style={cellSize}>
         <div className="inputPorts">{inPortHandles}</div>

@@ -45,7 +45,6 @@ function App() {
 
   // Extracts a graph from the binary response and sets it as the current graph.
   async function handleUpdatedGraph(response: Response) {
-    console.log("Response is", response)
     if (response.status == APIResponses.Graph) {
       response.arrayBuffer().then((responseBuffer) => {
         deserialize_graph(
@@ -65,7 +64,6 @@ function App() {
   // Saves current graph and updates with the last compiled inputs/outputs.
   async function saveDag(callback?: any) {
     setBusySaving(true);
-    console.log("saving dag", graph);
     if (graph === undefined) {
       setBusySaving(false);
       return;

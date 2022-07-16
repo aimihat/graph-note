@@ -44,6 +44,16 @@
           "oneof": [
             "output"
           ]
+        },
+        "_lastExecuted": {
+          "oneof": [
+            "lastExecuted"
+          ]
+        },
+        "_dependencyStatus": {
+          "oneof": [
+            "dependencyStatus"
+          ]
         }
       },
       "fields": {
@@ -70,6 +80,29 @@
           "id": 6,
           "options": {
             "proto3_optional": true
+          }
+        },
+        "lastExecuted": {
+          "type": "int32",
+          "id": 7,
+          "options": {
+            "proto3_optional": true
+          }
+        },
+        "dependencyStatus": {
+          "type": "DependencyStatus",
+          "id": 8,
+          "options": {
+            "proto3_optional": true
+          }
+        }
+      },
+      "nested": {
+        "DependencyStatus": {
+          "values": {
+            "NOT_EXECUTED": 0,
+            "INPUT_PORT_OUTDATED": 1,
+            "UP_TO_DATE": 2
           }
         }
       }

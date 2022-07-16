@@ -15,7 +15,7 @@ import { deserialize_graph } from "../../utils/protobuf_utils";
 import { autoLayout } from "../../utils/graph_utils";
 
 const rfStyle = {
-  backgroundColor: "#B8CEFF",
+  backgroundColor: "#eee",
 };
 
 const nodeTypes = {
@@ -87,14 +87,12 @@ function Flow({ graph, setGraph }: FlowProps) {
   };
 
   function updateSelectedNode(_: React.MouseEvent, node: Node) {
-    console.log("Updating selected node in graph to " + node.id, graph);
     setGraph((prevGraph?: GraphType) => {
       if (prevGraph === undefined) return undefined;
       const updatedGraph = { ...prevGraph };
       updatedGraph.selectedCell = node.id;
       return updatedGraph;
     });
-    console.log("Updating selected node in graph to " + node.id, graph);
   }
 
   useEffect(() => {

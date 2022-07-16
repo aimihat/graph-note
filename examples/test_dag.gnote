@@ -44,8 +44,8 @@ graphnote.out(
 3X_test*
 4	predicted*
 5y_test*
-6clf2(This is the output for the trainer cell.ì
-cell_visualize¤
+6clf2(This is the output for the trainer cell.ë
+cell_visualize£
 # Below we visualize the first 4 test samples and show their predicted digit value in the title.
 
 _, axes = plt.subplots(nrows=1, ncols=4, figsize=(10, 3))
@@ -56,10 +56,8 @@ for ax, image, prediction in zip(axes, INPUT["X_test"], INPUT["predicted"]):
     ax.set_title(f"Prediction: {prediction}")
 
 print(
-    f'Classification report for classifier {INPUT["clf"]}:
-'
-    f'{metrics.classification_report(INPUT["y_test"], INPUT["predicted"])}
-'
+    f'Classification report for classifier {INPUT["clf"]}:',
+    f'{metrics.classification_report(INPUT["y_test"], INPUT["predicted"])}'
 )
 "
 7X_test"

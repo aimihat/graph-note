@@ -9,16 +9,14 @@ function parse_message(deserialized_message: GraphMessageType): GraphType {
   const selectedCell = deserialized_message.selectedCell;
 
   // Parse edges (can be made more efficient by caching port -> nodeid map)
-  console.log(deserialized_message)
+  console.log(deserialized_message);
   const edges = deserialized_message.connections.map((conn: any) => {
     return {
       id: `${conn.sourceUid} + ${conn.TargetUid}`,
       sourceHandle: conn.sourceUid,
       targetHandle: conn.targetUid,
       source: deserialized_message.cells.find((node: any) => {
-        return node.outPorts
-          .map((p: any) => p.uid)
-          ?.includes(conn.sourceUid);
+        return node.outPorts.map((p: any) => p.uid)?.includes(conn.sourceUid);
       })?.uid, // todo: remove this when pruning connections
       target: deserialized_message.cells.find((node: any) =>
         node.inPorts.map((p: any) => p.uid)?.includes(conn.targetUid)
@@ -37,12 +35,14 @@ function parse_message(deserialized_message: GraphMessageType): GraphType {
           outputPorts: cell.outPorts,
           inputPorts: cell.inPorts,
           code: cell.code,
+          dependencyStatus: cell.dependencyStatus
         },
         width: 150,
         height: 50,
         selected: cell.uid === selectedCell,
       };
-    }), edges
+    }),
+    edges
   );
   const graph = {
     nodes: nodes,
@@ -95,6 +95,7 @@ export function serialize_graph(
             root.lookupType("Port").create(p)
           ) ?? [],
         output: node.data.output,
+        dependencyStatus: node.data.dependencyStatus
       })
     );
 
@@ -102,7 +103,6 @@ export function serialize_graph(
       (node.data.inputPorts ?? []).concat(node.data.outputPorts ?? [])
     );
 
-    console.log(graph.edges, allPorts)
     // Create edges
     const protoConnections = graph.edges.map((edge: EdgeType) =>
       root.lookupType("Connection").create({

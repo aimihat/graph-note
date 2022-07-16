@@ -1,4 +1,4 @@
-$node-border: 0.5px solid #1a192b;
+$node-border: 1px solid #1a192b;
 $node-border-radius: 4px;
 
 .nodeContainer {
@@ -29,7 +29,14 @@ $node-border-radius: 4px;
     width: 100%;
     position: absolute;
   }
-  
+
+  &.InputPortOutdated {
+    border-color: darkorange;
+  }
+  &.UpToDate {
+    border-color: darkgreen;
+  }
+
 }
 
 .react-flow__node.selected {
@@ -38,7 +45,7 @@ $node-border-radius: 4px;
     opacity: 1;
     border-style: solid;
     /* border-color: darkorange; */
-    border-width: 1px;
+    border-width: 1.5px;
   }
 }
 

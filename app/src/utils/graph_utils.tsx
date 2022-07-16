@@ -40,7 +40,7 @@ export function updateNode(
 
     return updatedGraph;
   });
-  
+
 }
 
 export function addNode(setGraph: SetGraphType) {
@@ -93,7 +93,6 @@ export const autoLayout = (flowNodeStates: NodeType[], edges: EdgeType[]): NodeT
     edges.forEach(edge => {
       if (edge.source == node.id) {
         g.setEdge(node.id, edge.target);
-        console.log("Setting edge: " + node.id + ', ' + edge.target);
       }
     })
   });

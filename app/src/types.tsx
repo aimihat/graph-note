@@ -14,6 +14,7 @@ export type NodeDataType = {
   code?: string;
   inputPorts?: PortType[];
   outputPorts?: PortType[];
+  dependencyStatus?: DependencyStatus;
 };
 
 export type NodeType = {
@@ -44,4 +45,11 @@ export type GraphType = {
 export enum APIResponses {
   Graph = 200,
   ErrorMessage = 206
+}
+
+export enum DependencyStatus {
+  NotExecuted = 0,
+  InputPortOutdated = 1,
+  UpToDate = 2,
+  // @future: consider a state for code being updated?
 }
