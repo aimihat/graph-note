@@ -1,6 +1,13 @@
 {
   "nested": {
     "Port": {
+      "oneofs": {
+        "_lastUpdated": {
+          "oneof": [
+            "lastUpdated"
+          ]
+        }
+      },
       "fields": {
         "uid": {
           "type": "string",
@@ -9,17 +16,24 @@
         "name": {
           "type": "string",
           "id": 2
+        },
+        "lastUpdated": {
+          "type": "int32",
+          "id": 3,
+          "options": {
+            "proto3_optional": true
+          }
         }
       }
     },
     "Connection": {
       "fields": {
-        "fromPort": {
-          "type": "Port",
+        "sourceUid": {
+          "type": "string",
           "id": 1
         },
-        "toPort": {
-          "type": "Port",
+        "targetUid": {
+          "type": "string",
           "id": 2
         }
       }

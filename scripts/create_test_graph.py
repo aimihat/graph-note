@@ -96,11 +96,11 @@ cell_visualize.in_ports.extend(
 # Create connections
 connections = [
     graph_pb2.Connection(
-        from_port=cell_data.out_ports[0], to_port=cell_trainer.in_ports[0]
+        source_uid=cell_data.out_ports[0].uid, target_uid=cell_trainer.in_ports[0].uid
     ),
 ]
 for from_, to_ in zip(cell_trainer.out_ports, cell_visualize.in_ports):
-    connections.append(graph_pb2.Connection(from_port=from_, to_port=to_))
+    connections.append(graph_pb2.Connection(source_uid=from_.uid, target_uid=to_.uid))
 
 # Create dag
 dag = graph_pb2.Graph()

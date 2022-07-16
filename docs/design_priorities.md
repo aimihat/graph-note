@@ -1,16 +1,13 @@
 Current:
-- Update cell connections, in UI & proto.
-
-Bugs:
-- Selected cell gets unselected.
+- Implement outputs (c.f. RFC)
 
 Backlog:
 - Fix logging across components
-- Implement outputs (c.f. RFC)
 - Editing root node: imports & globals.
 - Cell execution status -> running, finished, etc.
-- Cell dependency status via colours.
+- Cell dependency status via colours. + whether code / inputs was edited since last run
 - Improve UI
+    - errors colour the port directly..
     - For code editing -> re-use jupyter code.
     - Code editing as a window that can be positioned/sized?
     - Edit cell name directly on the cell: when selected, turns into an input.
@@ -21,5 +18,6 @@ Backlog:
 
 Ideas for future:
 - Open websocket connection for continual updates from the kernel.
+- Both  kernel outputs and compiled functions should use UIDs as a single source of truth. Port names should only be used for display.
 
 Completed:

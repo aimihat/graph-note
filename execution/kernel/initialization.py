@@ -1,7 +1,6 @@
 """Initialize the runtime environment to support cell outputs being recorded at global scope."""
 from typing import Any, Dict
 import time
-import json
 
 OUT_PORT_VALUES = {}
 OUT_PORT_METADATA = {}

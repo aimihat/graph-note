@@ -2,7 +2,7 @@ from typing import Dict
 import uuid
 import json
 
-from execution.helpers import code_helpers
+import execution.helpers.code_helpers as code_helpers
 from execution.messages import definitions, parsers
 from proto.classes import graph_pb2
 import enum
@@ -102,18 +102,32 @@ def validate_cell(dag: graph_pb2.Graph, cell: graph_pb2.Cell) -> ValidationResul
 
     # TODO: prune connections before checking for validity.
     # Check that the cell's input ports are connected. Disconnected outputs can be ignored.
-    connected_inputs = [c.to_port.uid for c in dag.connections]
+    connected_inputs = [c.target_uid for c in dag.connections]
     if not all(p.uid in connected_inputs for p in cell.in_ports):
         return ValidationResult.DISCONNECTED_INPUT
 
     # Check that the cell inputs have a runtime value
     in_port_uids = [p.uid for p in cell.in_ports]
+    port_mapping = graph_port_mapping(dag)
+    print("missing runtime value", dag.connections)
     for c in dag.connections:
-        if c.to_port.uid in in_port_uids and c.from_port.last_updated == 0:
-            print("missing runtime value", c)
+        if (
+            c.target_uid in in_port_uids
+            and port_mapping[c.source_uid].last_updated == 0
+        ):
             return ValidationResult.INPUT_MISSING_RUNTIME_VAL
 
     return ValidationResult.CAN_BE_EXECUTED
+
+
+def graph_port_mapping(graph: graph_pb2.Graph) -> Dict[str, graph_pb2.Port]:
+    """Returns a mapping from uid->port."""
+    # TODO: cache
+    port_map = {}
+    for cell in graph.cells:
+        for p in list(cell.in_ports) + list(cell.out_ports):
+            port_map[p.uid] = p
+    return port_map
 
 
 # @Future

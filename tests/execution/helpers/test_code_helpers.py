@@ -1,6 +1,11 @@
+from unittest.mock import patch
 from google.protobuf.json_format import MessageToJson
 from proto.classes import graph_pb2
 from execution.helpers import code_helpers
+from tests.execution.helpers.test_graph_helpers import (
+    patched_graph_port_mapping,
+    source_port,
+)
 
 P1 = graph_pb2.Port(uid="1", name="x_source")
 P2 = graph_pb2.Port(uid="2", name="x_input")
@@ -15,7 +20,7 @@ TEST_DAG = graph_pb2.Graph()
 TEST_DAG.cells.extend([TEST_CELL])
 TEST_DAG.connections.extend(
     [
-        graph_pb2.Connection(from_port=P1, to_port=P2),
+        graph_pb2.Connection(source_uid=P1.uid, target_uid=P2.uid),
     ]
 )
 EXPECTED_COMPILED_TEST_CELL = """def test_cell(x_input):
@@ -34,7 +39,7 @@ TEST_DAG2 = graph_pb2.Graph()
 TEST_DAG2.cells.extend([TEST_CELL2])
 TEST_DAG2.connections.extend(
     [
-        graph_pb2.Connection(from_port=P1, to_port=P2),
+        graph_pb2.Connection(source_uid=P1.uid, target_uid=P2.uid),
     ]
 )
 EXPECTED_COMPILED_TEST_CELL2 = """def test_cell(x_input):
@@ -44,18 +49,26 @@ EXPECTED_COMPILED_TEST_CELL2 = """def test_cell(x_input):
 test_cell(x_input=OUT_PORT_VALUES['x_source'])"""
 
 
-def test_cell_compilation():
+def test_cell_compilation(patched_graph_port_mapping):
     """Checks that a validated cell gets compiled as expected
     i.e. as a function defined with cell inputs as function arguments
     and a function call with the connected outputs."""
 
-    compiled_cell = code_helpers.compile_cell(TEST_DAG, TEST_CELL)
+    with patch(
+        "execution.helpers.graph_helpers.graph_port_mapping",
+        side_effect=patched_graph_port_mapping,
+    ):
+        compiled_cell = code_helpers.compile_cell(TEST_DAG, TEST_CELL)
     assert compiled_cell == EXPECTED_COMPILED_TEST_CELL
 
 
-def test_cell_compilation_with_input_reuse():
+def test_cell_compilation_with_input_reuse(patched_graph_port_mapping):
     """Checks that a validated cell gets compiled as expected
     when an input is used multiple times in the cell code."""
 
-    compiled_cell = code_helpers.compile_cell(TEST_DAG2, TEST_CELL2)
+    with patch(
+        "execution.helpers.graph_helpers.graph_port_mapping",
+        side_effect=patched_graph_port_mapping,
+    ):
+        compiled_cell = code_helpers.compile_cell(TEST_DAG2, TEST_CELL2)
     assert compiled_cell == EXPECTED_COMPILED_TEST_CELL2

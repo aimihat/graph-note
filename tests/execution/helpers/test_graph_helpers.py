@@ -1,8 +1,10 @@
 from copy import deepcopy
+from unittest.mock import patch
 import uuid
 from execution.helpers.graph_helpers import (
     ValidationResult,
     detect_in_ports,
+    graph_port_mapping,
     reset_out_ports,
     update_out_ports,
     validate_cell,
@@ -38,14 +40,19 @@ def executor_state_to_meta_msg(state):
 
 
 @pytest.fixture
-def single_cell_dag():
+def source_port():
+    P1 = graph_pb2.Port(uid="1", name="x_source", last_updated=99)
+    return P1
+
+
+@pytest.fixture
+def single_cell_dag(source_port):
     TEST_CELL = graph_pb2.Cell()
     TEST_CELL.uid = "test_cell"
     TEST_CELL.code = """x = INPUT["x_input"]
     y = x"""
 
     # Input ports
-    P1 = graph_pb2.Port(uid="1", name="x_source", last_updated=99)
     P2 = graph_pb2.Port(uid="2", name="x_input")
     TEST_CELL.in_ports.extend([P2])
     # Output ports
@@ -57,10 +64,21 @@ def single_cell_dag():
     TEST_DAG.cells.extend([TEST_CELL])
     TEST_DAG.connections.extend(
         [
-            graph_pb2.Connection(from_port=P1, to_port=P2),
+            graph_pb2.Connection(source_uid=source_port.uid, target_uid=P2.uid),
         ]
     )
     return TEST_DAG
+
+
+@pytest.fixture
+def patched_graph_port_mapping(source_port):
+    def patch(graph: graph_pb2.Graph):
+        mapping = graph_port_mapping(graph)
+        P1 = source_port
+        mapping[P1.uid] = P1
+        return mapping
+
+    return patch
 
 
 class TestCellValidation:
@@ -95,22 +113,37 @@ class TestCellValidation:
             validate_cell(single_cell_dag, cell) == ValidationResult.DISCONNECTED_INPUT
         )
 
-    def test_succeeds_for_connected_inputs(self, single_cell_dag):
+    def test_succeeds_for_connected_inputs(
+        self, single_cell_dag, patched_graph_port_mapping
+    ):
         cell = single_cell_dag.cells[0]
-        assert validate_cell(single_cell_dag, cell) == ValidationResult.CAN_BE_EXECUTED
+        with patch(
+            "execution.helpers.graph_helpers.graph_port_mapping",
+            side_effect=patched_graph_port_mapping,
+        ):
+            assert (
+                validate_cell(single_cell_dag, cell) == ValidationResult.CAN_BE_EXECUTED
+            )
 
-    def test_fails_for_connected_input_without_runtime_value(self, single_cell_dag):
+    def test_fails_for_connected_input_without_runtime_value(
+        self, single_cell_dag, patched_graph_port_mapping
+    ):
         cell = single_cell_dag.cells[0]
 
         # Set cell's ins to have no runtime value
+        port_mapping = patched_graph_port_mapping(single_cell_dag)
         for c in single_cell_dag.connections:
-            if c.to_port in cell.in_ports:
-                c.from_port.last_updated = 0
+            if c.target_uid in [p.uid for p in cell.in_ports]:
+                port_mapping[c.source_uid].last_updated = 0
 
-        assert (
-            validate_cell(single_cell_dag, cell)
-            == ValidationResult.INPUT_MISSING_RUNTIME_VAL
-        )
+        with patch(
+            "execution.helpers.graph_helpers.graph_port_mapping",
+            side_effect=patched_graph_port_mapping,
+        ):
+            assert (
+                validate_cell(single_cell_dag, cell)
+                == ValidationResult.INPUT_MISSING_RUNTIME_VAL
+            )
 
     def test_succeeds_if_no_inputs(self, single_cell_dag):
         cell = single_cell_dag.cells[0]
@@ -185,7 +218,7 @@ class TestUpdateOutPorts:
         single_cell_dag.connections.extend(
             [
                 graph_pb2.Connection(
-                    from_port=cell.out_ports[0], to_port=graph_pb2.Port(uid="test_port")
+                    source_uid=cell.out_ports[0].uid, target_uid="test_port_uid"
                 ),
             ]
         )
@@ -195,7 +228,10 @@ class TestUpdateOutPorts:
         stdout_metadata_msg = executor_state_to_meta_msg(state_step_2)
         update_out_ports(state_step_1, cell, stdout_metadata_msg)
         print("step 2", single_cell_dag)
-        assert single_cell_dag.connections[-1].from_port.last_updated == 100
+        port_mapping = graph_port_mapping(single_cell_dag)
+        assert (
+            port_mapping[single_cell_dag.connections[-1].source_uid].last_updated == 100
+        )
 
     def test_does_not_update_if_metadata_unchanged(
         self, single_cell_dag, executor_state

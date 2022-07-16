@@ -3,27 +3,30 @@ syntax = "proto3";
 message Port {
   // port unique identifier
   string uid = 1;
-  // port name, as displayed in the UI
+  // port name, only used for UI display
   string name = 2;
   // utc timestamp for the last time the port received an updated value
-  optional int32 last_updated = 3; // utc_timestamp
+  optional int32 last_updated = 3;
 }
 
 message Connection {
-  Port from_port = 1;
-  Port to_port = 2;
+  // uid of source port
+  string source_uid = 1;
+  // uid of target port
+  string target_uid = 2;
 }
 
 message Cell {
+  // cell unique identifier
   string uid = 1;
+  // raw code from the cell
   string code = 2;
-
-  // Cell ins/outs are updated whenever a cell is compiled.
+  // cell inputs, updated whenever a cell is saved
   repeated Port in_ports = 4;
+  // cell outputs, updated whenever a cell is executed
   repeated Port out_ports = 5;
-
+  // cell output text, displayed in the UI
   optional string output = 6;
-
   // @future: last_executed;
   // @future: last_execution_status; (success / failure)
 }

@@ -1,5 +1,6 @@
 import re
 from typing import Set
+import execution.helpers.graph_helpers as graph_helpers
 
 from proto.classes import graph_pb2
 
@@ -30,10 +31,11 @@ def compile_cell(dag: graph_pb2.Graph, cell: graph_pb2.Cell) -> str:
 
     # Call the function with the connected outputs.
     kwargs = []
+    port_mapping = graph_helpers.graph_port_mapping(dag)
     for conn in dag.connections:
-        if conn.to_port.uid in in_port_uids:
+        if conn.target_uid in in_port_uids:
             kwargs.append(
-                f"{conn.to_port.name}=OUT_PORT_VALUES['{conn.from_port.name}']"
+                f"{port_mapping[conn.target_uid].name}=OUT_PORT_VALUES['{port_mapping[conn.source_uid].name}']"
             )
     function_call = f"{cell.uid}({','.join(kwargs)})"
 

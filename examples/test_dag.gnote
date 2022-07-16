@@ -65,19 +65,9 @@ print(
 7X_test"
 8	predicted"
 9y_test"	
-10clf*
-
-1digits__different_name
-2digits
-
-3X_test
-7X_test 
-
-4	predicted
-8	predicted
-
-5y_test
-9y_test
-
-6clf	
-10clf
+10clf
+12
+37
+48
+59
+610
