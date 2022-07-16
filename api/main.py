@@ -88,6 +88,7 @@ async def run_cell(cell_uid: str, response: Response):
             try:
                 await runner.run_cell(cell)
             except Exception as e:
+                print(f"Could not execute due to error: {e}")
                 return PlainTextResponse(
                     str(e),
                     status_code=APIResponses.ErrorMessage.value,

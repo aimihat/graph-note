@@ -1,12 +1,13 @@
 import inspect
 import logging
-from typing import Any
+from typing import Any, Dict
 
 import jupyter_client
 
 from execution.helpers.code_helpers import compile_cell
 from execution.helpers.graph_helpers import (
     ValidationResult,
+    update_out_ports,
     validate_cell,
     validate_root,
     reset_out_ports,
@@ -23,6 +24,7 @@ class GraphExecutor:
         self.dag = dag
         self.client = client
         self.logger = logging.getLogger()
+        self.executor_state: Dict[str, Any] = {"out_port_metadata": {}}
 
     async def initialize(self):
         # TODO: this shouldn't be done here.
@@ -54,17 +56,25 @@ class GraphExecutor:
 
         # Reset the cell output, before updating it with incoming messages.
         cell.output = ""
-
         cell_validation = validate_cell(self.dag, cell)
+
         if cell_validation == ValidationResult.CAN_BE_EXECUTED:
             exec_code = compile_cell(self.dag, cell)
-            print(exec_code, cell.code)
-
             update_cell_output_ = lambda msg: self.update_cell_output(cell, msg)
 
             await self.client._async_execute_interactive(
                 exec_code, output_hook=update_cell_output_
             )
+
+            # TODO: don't run the below if there was an error (add test case).
+            # Check what outputs were updated during the last cell execution.
+            await self.client._async_execute_interactive(
+                "print(json.dumps(OUT_PORT_METADATA))",
+                output_hook=lambda msg: update_out_ports(
+                    self.executor_state, cell, msg
+                ),
+            )
+
         elif cell_validation == ValidationResult.DISCONNECTED_INPUT:
             raise Exception("Not all cell inputs are connected.")
         elif cell_validation == ValidationResult.INPUT_MISSING_RUNTIME_VAL:

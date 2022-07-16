@@ -32,7 +32,9 @@ def compile_cell(dag: graph_pb2.Graph, cell: graph_pb2.Cell) -> str:
     kwargs = []
     for conn in dag.connections:
         if conn.to_port.uid in in_port_uids:
-            kwargs.append(f"{conn.to_port.name}=CELL_OUTPUTS['{conn.from_port.name}']")
+            kwargs.append(
+                f"{conn.to_port.name}=OUT_PORT_VALUES['{conn.from_port.name}']"
+            )
     function_call = f"{cell.uid}({','.join(kwargs)})"
 
     exec_code = f"{function}\n{function_call}"

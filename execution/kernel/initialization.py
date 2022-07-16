@@ -1,7 +1,10 @@
 """Initialize the runtime environment to support cell outputs being recorded at global scope."""
-from typing import Any, Dict, List, Union
+from typing import Any, Dict
+import time
+import json
 
-CELL_OUTPUTS = {}
+OUT_PORT_VALUES = {}
+OUT_PORT_METADATA = {}
 
 
 class GraphNote:
@@ -12,7 +15,8 @@ class GraphNote:
         """Records the given cell output(s), taken as a dict from port names to objects."""
 
         if type(outputs) == dict:
-            CELL_OUTPUTS.update(outputs)
+            OUT_PORT_VALUES.update(outputs)
+            OUT_PORT_METADATA.update({k: int(time.time()) for k in outputs.keys()})
         else:
             raise Exception(
                 "`outputs` argument expected to be typed as Dict[str, Any]."

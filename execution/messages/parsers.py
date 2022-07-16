@@ -28,6 +28,7 @@ def parse_ansi_escape(text):
 
 
 def parse_message(message: Dict[str, Any]) -> definitions.Message:
+
     raw_message = definitions.Message(
         header=message["header"],
         msg_id=message["msg_id"],

@@ -29,6 +29,9 @@ class TestRunner:
 
         # test that cell is executed
 
+    def test_run_cell_updates_out_ports(self):
+        ...
+
     def test_initialise_resets_outputs(self):
         ...
 

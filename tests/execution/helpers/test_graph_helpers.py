@@ -1,18 +1,40 @@
 from copy import deepcopy
-from google.protobuf.json_format import MessageToJson
+import uuid
 from execution.helpers.graph_helpers import (
     ValidationResult,
     detect_in_ports,
     reset_out_ports,
+    update_out_ports,
     validate_cell,
 )
 from proto.classes import graph_pb2
 
-from google.protobuf.json_format import MessageToJson
 from proto.classes import graph_pb2
-from execution.helpers import code_helpers
 import pytest
-import time
+import json
+
+
+@pytest.fixture
+def executor_state():
+    state_step_1 = {"out_port_metadata": {"out1": 99, "out2": 99}}
+
+    state_step_2 = {"out_port_metadata": {"out1": 100, "out2": 100}}
+
+    return (state_step_1, state_step_2)
+
+
+def executor_state_to_meta_msg(state):
+    return {
+        "header": {},
+        "msg_id": {},
+        "msg_type": "stream",
+        "parent_header": {},
+        "metadata": {},
+        "content": {
+            "name": "stdout",
+            "text": json.dumps(state["out_port_metadata"]),
+        },
+    }
 
 
 @pytest.fixture
@@ -23,12 +45,12 @@ def single_cell_dag():
     y = x"""
 
     # Input ports
-    P1 = graph_pb2.Port(uid="1", name="x_source", last_updated=int(time.time()))
+    P1 = graph_pb2.Port(uid="1", name="x_source", last_updated=99)
     P2 = graph_pb2.Port(uid="2", name="x_input")
     TEST_CELL.in_ports.extend([P2])
     # Output ports
-    P3 = graph_pb2.Port(uid="3", name="out1", last_updated=int(time.time()))
-    P4 = graph_pb2.Port(uid="4", name="out2")
+    P3 = graph_pb2.Port(uid="3", name="out1", last_updated=99)
+    P4 = graph_pb2.Port(uid="4", name="out2", last_updated=99)
     TEST_CELL.out_ports.extend([P3, P4])
 
     TEST_DAG = graph_pb2.Graph()
@@ -120,6 +142,70 @@ class TestDetectInPorts:
         assert len(cell.in_ports) == 1
         assert cell.in_ports[0].name == existing_port.name
         assert cell.in_ports[0].uid == existing_port.uid
+
+
+class TestUpdateOutPorts:
+    def test_updates_metadata(self, single_cell_dag, executor_state):
+        cell = single_cell_dag.cells[0]
+        state_step_1, state_step_2 = executor_state
+        stdout_metadata_msg = executor_state_to_meta_msg(state_step_2)
+        update_out_ports(state_step_1, cell, stdout_metadata_msg)
+        assert state_step_1["out_port_metadata"] == state_step_2["out_port_metadata"]
+
+    def test_removes_deleted_ports(self, single_cell_dag, executor_state):
+        cell = single_cell_dag.cells[0]
+        cell.out_ports.extend(
+            [graph_pb2.Port(uid=str(uuid.uuid4()), last_updated=1, name="unused-port")]
+        )
+
+        n_ports = len(cell.out_ports)
+        state_step_1, state_step_2 = executor_state
+        stdout_metadata_msg = executor_state_to_meta_msg(state_step_2)
+        update_out_ports(state_step_1, cell, stdout_metadata_msg)
+        assert len(cell.out_ports) == n_ports - 1
+
+    def test_adds_new_ports_with_correct_timestamp(
+        self, single_cell_dag, executor_state
+    ):
+        cell = single_cell_dag.cells[0]
+        del cell.out_ports[1:]
+        assert len(cell.out_ports) == 1
+        state_step_1, state_step_2 = executor_state
+        stdout_metadata_msg = executor_state_to_meta_msg(state_step_2)
+        update_out_ports(state_step_1, cell, stdout_metadata_msg)
+        assert len(cell.out_ports) == 2
+        assert all(
+            p.last_updated == state_step_2["out_port_metadata"][p.name]
+            for p in cell.out_ports
+        )
+
+    def test_does_not_duplicate_ports(self, single_cell_dag, executor_state):
+        # ensure ports in connections map to the same objects
+        cell = single_cell_dag.cells[0]
+        single_cell_dag.connections.extend(
+            [
+                graph_pb2.Connection(
+                    from_port=cell.out_ports[0], to_port=graph_pb2.Port(uid="test_port")
+                ),
+            ]
+        )
+
+        state_step_1, state_step_2 = executor_state
+        print("step 1", single_cell_dag)
+        stdout_metadata_msg = executor_state_to_meta_msg(state_step_2)
+        update_out_ports(state_step_1, cell, stdout_metadata_msg)
+        print("step 2", single_cell_dag)
+        assert single_cell_dag.connections[-1].from_port.last_updated == 100
+
+    def test_does_not_update_if_metadata_unchanged(
+        self, single_cell_dag, executor_state
+    ):
+        cell = single_cell_dag.cells[0]
+        state_step_1, _ = executor_state
+        stdout_metadata_msg = executor_state_to_meta_msg(state_step_1)
+        ports_pre_updated = cell.out_ports
+        update_out_ports(state_step_1, cell, stdout_metadata_msg)
+        assert cell.out_ports == ports_pre_updated
 
 
 class TestResetOutPorts:

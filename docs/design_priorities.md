@@ -5,6 +5,7 @@ Bugs:
 - Selected cell gets unselected.
 
 Backlog:
+- Fix logging across components
 - Implement outputs (c.f. RFC)
 - Editing root node: imports & globals.
 - Cell execution status -> running, finished, etc.

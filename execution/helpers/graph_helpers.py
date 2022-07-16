@@ -1,6 +1,9 @@
+from typing import Dict
 import uuid
+import json
 
 from execution.helpers import code_helpers
+from execution.messages import definitions, parsers
 from proto.classes import graph_pb2
 import enum
 
@@ -25,9 +28,53 @@ def detect_in_ports(cell: graph_pb2.Cell) -> None:
     )
 
 
-def detect_out_ports(cell: graph_pb2.Cell):
-    """Detects output ports for a cell that has been just executed."""
-    ...
+def update_out_ports(executor_state: Dict, cell: graph_pb2.Cell, msg: Dict) -> None:
+    """Updates the output ports of a cell after executing it.
+
+    After executing a cell we ping the kernel for the latest cell metadata.
+    This produces a std-out msg that can be compared to the previous timestep.
+    """
+
+    parsed_message = parsers.parse_message(msg)
+    if type(parsed_message.content) == definitions.CellStdout:
+        print("received message", parsed_message)
+        prev_metadata = executor_state["out_port_metadata"]
+
+        # parse the current port metadata from msg
+        meta_str = parsed_message.content.text
+        meta_dict = json.loads(meta_str)
+        print("prev meta", prev_metadata)
+        print("loaded metadata", meta_dict)
+
+        # compute the diff & update cell output ports (keeping existing)
+        detected_outputs = [
+            {"name": k, "last_updated": v}
+            for k, v in meta_dict.items()
+            if (k not in prev_metadata.keys() or prev_metadata[k] != meta_dict[k])
+        ]
+
+        new_ports = []
+        existing_port_names = [p_.name for p_ in cell.out_ports]
+
+        for p in detected_outputs:
+            # if output exists re-use the same port - as it may have associated connections
+            if p["name"] in existing_port_names:
+                existing_port = cell.out_ports[existing_port_names.index(p["name"])]
+                existing_port.last_updated = p["last_updated"]
+                new_ports.append(existing_port)
+            else:
+                new_ports.append(
+                    graph_pb2.Port(
+                        uid=str(uuid.uuid4()),
+                        name=p["name"],
+                        last_updated=p["last_updated"],
+                    )
+                )
+
+        del cell.out_ports[:]
+        cell.out_ports.extend(new_ports)
+        # update previous metadata
+        executor_state["out_port_metadata"] = meta_dict
 
 
 def reset_out_ports(graph: graph_pb2.Graph) -> None:
@@ -63,6 +110,7 @@ def validate_cell(dag: graph_pb2.Graph, cell: graph_pb2.Cell) -> ValidationResul
     in_port_uids = [p.uid for p in cell.in_ports]
     for c in dag.connections:
         if c.to_port.uid in in_port_uids and c.from_port.last_updated == 0:
+            print("missing runtime value", c)
             return ValidationResult.INPUT_MISSING_RUNTIME_VAL
 
     return ValidationResult.CAN_BE_EXECUTED

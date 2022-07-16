@@ -1,8 +1,11 @@
 syntax = "proto3";
 
 message Port {
+  // port unique identifier
   string uid = 1;
+  // port name, as displayed in the UI
   string name = 2;
+  // utc timestamp for the last time the port received an updated value
   optional int32 last_updated = 3; // utc_timestamp
 }
 
@@ -29,6 +32,5 @@ message Graph {
   Cell root = 1;
   repeated Cell cells = 2;
   repeated Connection connections = 3;
-
   optional string selected_cell = 4;
 }

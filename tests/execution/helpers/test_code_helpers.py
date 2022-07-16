@@ -21,7 +21,7 @@ TEST_DAG.connections.extend(
 EXPECTED_COMPILED_TEST_CELL = """def test_cell(x_input):
 	x = x_input
 	y = x
-test_cell(x_input=CELL_OUTPUTS['x_source'])"""
+test_cell(x_input=OUT_PORT_VALUES['x_source'])"""
 
 # Same as above, with re-use of the input dependency
 TEST_CELL2 = graph_pb2.Cell()
@@ -41,7 +41,7 @@ EXPECTED_COMPILED_TEST_CELL2 = """def test_cell(x_input):
 	x = x_input
 	y = x
 	z = x_input
-test_cell(x_input=CELL_OUTPUTS['x_source'])"""
+test_cell(x_input=OUT_PORT_VALUES['x_source'])"""
 
 
 def test_cell_compilation():
