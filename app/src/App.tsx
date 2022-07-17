@@ -4,12 +4,17 @@ import "./App.css";
 import Flow from "./components/graph_visualiser/graph";
 import {
   Alert,
+  AppBar,
   Box,
   Button,
   ButtonGroup,
   Grid,
+  IconButton,
+  Menu,
+  MenuItem,
   Snackbar,
   Toolbar,
+  Typography,
 } from "@mui/material";
 import {
   Add,
@@ -56,8 +61,8 @@ function App() {
       });
     } else if (response.status == APIResponses.ErrorMessage) {
       // Check if response is a message to display
-      setSnackbarMessage(await response.text())
-      setSnackbarOpen(true)
+      setSnackbarMessage(await response.text());
+      setSnackbarOpen(true);
     }
   }
 
@@ -125,6 +130,27 @@ function App() {
 
   return (
     <HotKeys keyMap={keyMap} handlers={hotkeyHandlers} allowChanges={true}>
+      <AppBar position="static">
+        <Toolbar variant="dense">
+          <Typography variant="h6" color="inherit" component="div">
+            Graphical Jupyter
+          </Typography>
+          <Menu
+            id="basic-menu"
+            // anchorEl={anchorEl}
+            open={false}
+            // onClose={handleClose}
+            MenuListProps={{
+              "aria-labelledby": "basic-button",
+            }}
+            sx={{ width: 320 }}
+          >
+            <MenuItem dense={true}>Stop the kernel</MenuItem>
+            <MenuItem dense={true}>Restart and keep all outputs.</MenuItem>
+            <MenuItem dense={true}>Restart and clear all outputs.</MenuItem>
+          </Menu>
+        </Toolbar>
+      </AppBar>
       <Box>
         <Grid container>
           <Grid item xs={6} position="relative">

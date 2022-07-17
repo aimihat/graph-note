@@ -3,7 +3,7 @@ $node-border-radius: 4px;
 
 .nodeContainer {
   background: #fff;
-  opacity: 0.7;
+  opacity: 0.5;
   border-radius: $node-border-radius;
   border: $node-border;
 
@@ -37,15 +37,20 @@ $node-border-radius: 4px;
     border-color: darkgreen;
   }
 
+  &.NotExecuted {
+    border-style: dashed;
+  }
+
 }
 
 .react-flow__node.selected {
   .nodeContainer {
-    /* background: #eeefff; */
     opacity: 1;
-    border-style: solid;
-    /* border-color: darkorange; */
-    border-width: 1.5px;
+
+    &:not(.NotExecuted) {
+      border-width: 1.5px;
+    }
+
   }
 }
 
