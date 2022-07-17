@@ -19,26 +19,26 @@ import {
 import {
   Add,
   AddCircle,
+  ContentCutSharp,
   PlayArrow,
   PlayCircleFilled,
+  RestartAlt,
+  RestartAltSharp,
   Save,
+  SaveSharp,
+  Stop,
+  StopCircle,
 } from "@mui/icons-material";
 import NodeEditor from "./components/node_editor/editor";
 import { ReactFlowProvider } from "react-flow-renderer";
 import { APIResponses, GraphType, NodeType } from "./types";
 import { addNode, autoLayout } from "./utils/graph_utils";
 import { deserialize_graph, serialize_graph } from "./utils/protobuf_utils";
-import { HotKeys, configure } from "react-hotkeys";
 import moment from "moment";
 
 let ToBase64 = function (u8: any) {
   return btoa(String.fromCharCode.apply(null, u8));
 };
-
-configure({
-  ignoreTags: ["input", "select"],
-  ignoreRepeatedEventsWhenKeyHeldDown: false,
-});
 
 function App() {
   const [graph, setGraph] = useState<GraphType>();
@@ -120,16 +120,12 @@ function App() {
     RUN_CELL: "shift+enter",
   };
 
-  const hotkeyHandlers = {
-    RUN_CELL: runCell,
-  };
-
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
   };
 
   return (
-    <HotKeys keyMap={keyMap} handlers={hotkeyHandlers} allowChanges={true}>
+    <>
       <AppBar position="static">
         <Toolbar variant="dense">
           <Typography variant="h6" color="inherit" component="div">
@@ -178,6 +174,24 @@ function App() {
             >
               <Toolbar style={{ float: "right" }}>
                 <ButtonGroup
+                  sx={{ m: 1 }}
+                  size="small"
+                  variant="contained"
+                  aria-label="outlined primary button group"
+                  disabled={busySaving || busyRunning}
+                >
+                  <LoadingButton
+                    variant="contained"
+                    color="primary"
+                    onClick={saveDag}
+                    loading={busySaving}
+                  >
+                    <SaveSharp />
+                  </LoadingButton>
+                </ButtonGroup>
+                <ButtonGroup
+                  sx={{ m: 1 }}
+                  size="small"
                   variant="contained"
                   aria-label="outlined primary button group"
                   disabled={busySaving || busyRunning}
@@ -189,27 +203,50 @@ function App() {
                       addNode(setGraph);
                     }}
                     loading={false}
-                    startIcon={<AddCircle />}
                   >
-                    Add
+                    <Add />
                   </LoadingButton>
                   <LoadingButton
                     variant="contained"
                     color="primary"
-                    onClick={saveDag}
-                    loading={busySaving}
-                    startIcon={<Save />}
+                    onClick={() => {}}
+                    loading={false}
                   >
-                    Save
+                    <ContentCutSharp />
+                  </LoadingButton>
+                </ButtonGroup>
+                <ButtonGroup
+                  sx={{ m: 1 }}
+                  size="small"
+                  variant="contained"
+                  aria-label="outlined primary button group"
+                  disabled={busySaving || busyRunning}
+                >
+                  <LoadingButton
+                    variant="contained"
+                    color="primary"
+                    onClick={runCell}
+                    loading={busyRunning}
+                    style={{ textTransform: "none" }}
+                  >
+                    <PlayArrow sx={{ mr: 0.5 }} />
+                    Run
                   </LoadingButton>
                   <LoadingButton
                     variant="contained"
                     color="primary"
                     onClick={runCell}
                     loading={busyRunning}
-                    startIcon={<PlayCircleFilled />}
                   >
-                    Run
+                    <Stop />
+                  </LoadingButton>
+                  <LoadingButton
+                    variant="contained"
+                    color="primary"
+                    onClick={runCell}
+                    loading={busyRunning}
+                  >
+                    <RestartAlt />
                   </LoadingButton>
                 </ButtonGroup>
               </Toolbar>
@@ -246,7 +283,7 @@ function App() {
           </Grid>
         </Grid>
       </Box>
-    </HotKeys>
+    </>
   );
 }
 

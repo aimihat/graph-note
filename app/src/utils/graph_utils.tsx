@@ -56,10 +56,8 @@ export function addNode(setGraph: SetGraphType) {
       ...newNodes.flatMap((n) => n.id.match(/\d+/) ?? []).map(n => parseInt(n))
     ) + 1;
 
-    console.log('newNumber:', newNumber)
-    const newNodeId = `${newNodeIdPrefix}_${newNumber}`
     const newEmptyNode: NodeType = {
-      id: newNodeId,
+      id: `${newNodeIdPrefix}_${newNumber}`,
       type: "dagNode",
       data: {},
       width: 150,
@@ -67,15 +65,14 @@ export function addNode(setGraph: SetGraphType) {
       position: { x: 0, y: 0 },
     };
 
-    const prevNodes = prevGraph.nodes;
     const updatedNodes = autoLayout(
-      [...prevNodes, newEmptyNode],
+      [...prevGraph.nodes, newEmptyNode],
       prevGraph.edges
     );
 
     const updatedGraph = { ...prevGraph }; // TODO: correct way to copy?
     updatedGraph.nodes = updatedNodes;
-    updatedGraph.selectedCell = newNodeId; // The new cell should be selected
+    updatedGraph.selectedCell = newEmptyNode.id; // The new cell should be selected
 
     return updatedGraph;
   });
