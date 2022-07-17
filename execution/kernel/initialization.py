@@ -15,7 +15,7 @@ class GraphNote:
 
         if type(outputs) == dict:
             OUT_PORT_VALUES.update(outputs)
-            OUT_PORT_METADATA.update({k: int(time.time()) for k in outputs.keys()})
+            OUT_PORT_METADATA.update({k: int(time.time_ns()) for k in outputs.keys()})
         else:
             raise Exception(
                 "`outputs` argument expected to be typed as Dict[str, Any]."

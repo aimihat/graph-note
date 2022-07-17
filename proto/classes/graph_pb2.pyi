@@ -24,7 +24,7 @@ class Port(google.protobuf.message.Message):
     """port name, only used for UI display"""
 
     last_updated: builtins.int
-    """utc timestamp for the last time the port received an updated value"""
+    """utc timestamp (ns since epoch) for the last time the port received an updated value"""
 
     def __init__(
         self,
@@ -144,7 +144,7 @@ class Cell(google.protobuf.message.Message):
     """cell output text, displayed in the UI"""
 
     last_executed: builtins.int
-    """utc timestamp for the last time the cell was successfully executed (successfully or not).
+    """utc timestamp (ns since epoch) for the last time the cell was successfully executed (successfully or not).
     @future: last_execution_status; (success / failure)
     """
 

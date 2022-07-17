@@ -76,7 +76,7 @@ class GraphExecutor:
                 ),
             )
 
-            cell.last_executed = int(time.time())
+            cell.last_executed = int(time.time_ns())
             self.update_dependency_statuses(self.dag, last_cell=cell)
 
         elif cell_validation == ValidationResult.DISCONNECTED_INPUT:

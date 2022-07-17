@@ -18,7 +18,7 @@
           "id": 2
         },
         "lastUpdated": {
-          "type": "int32",
+          "type": "int64",
           "id": 3,
           "options": {
             "proto3_optional": true
@@ -83,7 +83,7 @@
           }
         },
         "lastExecuted": {
-          "type": "int32",
+          "type": "int64",
           "id": 7,
           "options": {
             "proto3_optional": true
