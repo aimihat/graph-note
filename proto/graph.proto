@@ -5,8 +5,8 @@ message Port {
   string uid = 1;
   // port name, only used for UI display
   string name = 2;
-  // utc timestamp for the last time the port received an updated value
-  optional int32 last_updated = 3;
+  // utc timestamp (ns since epoch) for the last time the port received an updated value
+  optional int64 last_updated = 3;
 }
 
 message Connection {
@@ -27,8 +27,8 @@ message Cell {
   repeated Port out_ports = 5;
   // cell output text, displayed in the UI
   optional string output = 6;
-  // utc timestamp for the last time the cell was successfully executed (successfully or not).
-  optional int32 last_executed = 7;
+  // utc timestamp (ns since epoch) for the last time the cell was successfully executed (successfully or not).
+  optional int64 last_executed = 7;
   // @future: last_execution_status; (success / failure)
 
   // this status code is used to colour code cells
