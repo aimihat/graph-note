@@ -55,6 +55,7 @@ export function addNode(setGraph: SetGraphType) {
     const newNumber = Math.max(0,
       ...newNodes.flatMap((n) => n.id.match(/\d+/) ?? []).map(n => parseInt(n))
     ) + 1;
+
     console.log('newNumber:', newNumber)
     const newNodeId = `${newNodeIdPrefix}_${newNumber}`
     const newEmptyNode: NodeType = {
@@ -74,6 +75,7 @@ export function addNode(setGraph: SetGraphType) {
 
     const updatedGraph = { ...prevGraph }; // TODO: correct way to copy?
     updatedGraph.nodes = updatedNodes;
+    updatedGraph.selectedCell = newNodeId; // The new cell should be selected
 
     return updatedGraph;
   });
