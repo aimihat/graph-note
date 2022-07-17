@@ -34,12 +34,16 @@ function Flow({ graph, setGraph }: FlowProps) {
         console.log("Cannot update node on undefined graph.");
         return undefined;
       }
-
       const updatedGraph = { ...prevGraph };
+
+      // Delete all other edges connecting to target port:
+      updatedGraph.edges = updatedGraph.edges.filter(e => e.targetHandle != params.targetHandle);
+
       const newEdge = {
         ...params,
         id: `${params.sourceHandle} + ${params.targetHandle}`,
       } as EdgeType;
+
       updatedGraph.edges.push(newEdge);
       updatedGraph.nodes = autoLayout(prevGraph.nodes, updatedGraph.edges);
 
