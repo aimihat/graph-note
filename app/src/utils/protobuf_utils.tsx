@@ -12,7 +12,7 @@ function parse_message(deserialized_message: GraphMessageType): GraphType {
   console.log(deserialized_message);
   const edges = deserialized_message.connections.map((conn: any) => {
     return {
-      id: `${conn.sourceUid} + ${conn.TargetUid}`,
+      id: `${conn.sourceUid} + ${conn.targetUid}`,
       sourceHandle: conn.sourceUid,
       targetHandle: conn.targetUid,
       source: deserialized_message.cells.find((node: any) => {
