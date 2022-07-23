@@ -9,21 +9,12 @@ from execution.helpers.graph_helpers import (
     update_out_ports,
     validate_cell,
 )
-from execution.runner import GraphExecutor
+from execution.runner import GraphExecutor, GraphExecutorState
 from proto.classes import graph_pb2
 
 from proto.classes import graph_pb2
 import pytest
 import json
-
-
-@pytest.fixture
-def executor_state():
-    state_step_1 = {"out_port_metadata": {"out1": 99, "out2": 99}}
-
-    state_step_2 = {"out_port_metadata": {"out1": 100, "out2": 100}}
-
-    return (state_step_1, state_step_2)
 
 
 def executor_state_to_meta_msg(state):
@@ -35,7 +26,7 @@ def executor_state_to_meta_msg(state):
         "metadata": {},
         "content": {
             "name": "stdout",
-            "text": json.dumps(state["out_port_metadata"]),
+            "text": json.dumps(state.out_port_metadata),
         },
     }
 
@@ -68,6 +59,18 @@ def single_cell_dag(source_port):
         ]
     )
     return TEST_DAG
+
+
+@pytest.fixture
+def executor_state(single_cell_dag):
+    state_step_1 = GraphExecutorState()
+    state_step_1.out_port_metadata = {"out1": 99, "out2": 99}
+    state_step_1.cell_exec_success[single_cell_dag.cells[0].uid] = True
+    state_step_2 = GraphExecutorState()
+    state_step_2.out_port_metadata = {"out1": 100, "out2": 100}
+    state_step_2.cell_exec_success[single_cell_dag.cells[0].uid] = True
+
+    return (state_step_1, state_step_2)
 
 
 @pytest.fixture
@@ -183,7 +186,7 @@ class TestUpdateOutPorts:
         state_step_1, state_step_2 = executor_state
         stdout_metadata_msg = executor_state_to_meta_msg(state_step_2)
         update_out_ports(state_step_1, cell, stdout_metadata_msg)
-        assert state_step_1["out_port_metadata"] == state_step_2["out_port_metadata"]
+        assert state_step_1.out_port_metadata == state_step_2.out_port_metadata
 
     def test_removes_deleted_ports(self, single_cell_dag, executor_state):
         cell = single_cell_dag.cells[0]
@@ -208,7 +211,7 @@ class TestUpdateOutPorts:
         update_out_ports(state_step_1, cell, stdout_metadata_msg)
         assert len(cell.out_ports) == 2
         assert all(
-            p.last_updated == state_step_2["out_port_metadata"][p.name]
+            p.last_updated == state_step_2.out_port_metadata[p.name]
             for p in cell.out_ports
         )
 
@@ -231,15 +234,23 @@ class TestUpdateOutPorts:
             port_mapping[single_cell_dag.connections[-1].source_uid].last_updated == 100
         )
 
-    def test_does_not_update_if_metadata_unchanged(
+    def test_deletes_all_ports_if_metadata_unchanged(
         self, single_cell_dag, executor_state
     ):
         cell = single_cell_dag.cells[0]
         state_step_1, _ = executor_state
         stdout_metadata_msg = executor_state_to_meta_msg(state_step_1)
-        ports_pre_updated = cell.out_ports
+        assert len(cell.out_ports) > 0
         update_out_ports(state_step_1, cell, stdout_metadata_msg)
-        assert cell.out_ports == ports_pre_updated
+        assert len(cell.out_ports) == 0
+
+    def test_does_not_update_if_cell_exec_error(self, single_cell_dag, executor_state):
+        cell = single_cell_dag.cells[0]
+        state_step_1, _ = executor_state
+        stdout_metadata_msg = executor_state_to_meta_msg(GraphExecutorState())
+        state_step_1.cell_exec_success[cell.uid] = False
+        update_out_ports(state_step_1, cell, stdout_metadata_msg)
+        assert len(cell.out_ports) == 2
 
 
 class TestResetOutPorts:

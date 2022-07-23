@@ -37,7 +37,11 @@ def update_out_ports(executor_state: Dict, cell: graph_pb2.Cell, msg: Dict) -> N
 
     parsed_message = parsers.parse_message(msg)
     if type(parsed_message.content) == definitions.CellStdout:
-        prev_metadata = executor_state["out_port_metadata"]
+        if executor_state.cell_exec_success[cell.uid] == False:
+            # Do not update ports if the cell failed to full execute.
+            return
+
+        prev_metadata = executor_state.out_port_metadata
 
         # parse the current port metadata from msg
         meta_str = parsed_message.content.text
@@ -71,7 +75,7 @@ def update_out_ports(executor_state: Dict, cell: graph_pb2.Cell, msg: Dict) -> N
         del cell.out_ports[:]
         cell.out_ports.extend(new_ports)
         # update previous metadata
-        executor_state["out_port_metadata"] = meta_dict
+        executor_state.out_port_metadata = meta_dict
 
 
 def reset_out_ports(graph: graph_pb2.Graph) -> None:
