@@ -1,6 +1,6 @@
 import Ansi from "ansi-to-react";
 import Editor from "@monaco-editor/react";
-import { AccessTime, PrecisionManufacturing } from "@mui/icons-material";
+import { AccessTime, HighlightAltSharp, PrecisionManufacturing } from "@mui/icons-material";
 import {
   Alert,
   AlertTitle,
@@ -9,6 +9,7 @@ import {
   CardContent,
   Container,
   Divider,
+  Grid,
   Paper,
   TextField,
   Typography,
@@ -16,7 +17,7 @@ import {
 import React, { useEffect, useRef, useState } from "react";
 import { GraphType, NodeType, SetGraphType } from "../../types";
 import { updateNode } from "../../utils/graph_utils";
-
+import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 interface NodeEditorProps {
   node?: NodeType;
   setGraph: SetGraphType;
@@ -27,15 +28,27 @@ function NodeEditor({ node, setGraph }: NodeEditorProps) {
 
   useEffect(() => {
     // TODO: why is this necessary?
-    setNodeCode(node?.data?.code)
-  }, [node?.data?.code])
+    setNodeCode(node?.data?.code);
+  }, [node?.data?.code]);
 
   // No cell selected.
   if (node === undefined) {
+
     return (
-      <Box sx={{ my: 2, mx: 2 }}>
-        <h3>Select or create a node</h3>
-      </Box>
+      <Typography variant="overline" color="grey">
+      <Box style={{
+        display: 'flex',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        flexDirection: "column",
+        fontSize: "20px",
+        justifyContent:"center",
+        minHeight: "90vh"
+    }}>
+
+        <HighlightAltSharp fontSize="large" sx={{mx: 2}} />Select a cell to edit it
+    </Box>
+    </Typography>
     );
   }
 

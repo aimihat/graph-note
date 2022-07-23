@@ -101,6 +101,15 @@ function Flow({ graph, setGraph }: FlowProps) {
     });
   }
 
+  function deselectNode(_: React.MouseEvent) {
+    setGraph((prevGraph?: GraphType) => {
+      if (prevGraph === undefined) return undefined;
+      const updatedGraph = { ...prevGraph };
+      updatedGraph.selectedCell = undefined;
+      return updatedGraph;
+    });
+  }
+
   useEffect(() => {
     if (reactFlowInstance) {
       reactFlowInstance.fitView();
@@ -117,6 +126,7 @@ function Flow({ graph, setGraph }: FlowProps) {
       edges={graph?.edges}
       onConnect={onConnect}
       onEdgesDelete={onEdgesDelete}
+      onPaneClick={deselectNode}
       nodeTypes={nodeTypes}
       style={rfStyle}
       onInit={onInit}
