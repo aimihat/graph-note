@@ -94,6 +94,5 @@ async def run_cell(cell_uid: str, response: Response):
                     status_code=APIResponses.ErrorMessage.value,
                 )
 
-    print(runner.dag)
     response.status_code = APIResponses.UpdatedGraph.value
     return Response(runner.dag.SerializeToString())
