@@ -2,6 +2,7 @@ from typing import Dict
 import uuid
 import json
 
+import execution.runner as runner
 import execution.helpers.code_helpers as code_helpers
 from execution.messages import definitions, parsers
 from proto.classes import graph_pb2
@@ -28,7 +29,9 @@ def detect_in_ports(cell: graph_pb2.Cell) -> None:
     )
 
 
-def update_out_ports(executor_state: Dict, cell: graph_pb2.Cell, msg: Dict) -> None:
+def update_out_ports(
+    executor_state: runner.GraphExecutorState, cell: graph_pb2.Cell, msg: Dict
+) -> None:
     """Updates the output ports of a cell after executing it.
 
     After executing a cell we ping the kernel for the latest cell metadata.

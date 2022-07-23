@@ -12,9 +12,10 @@ from fastapi import FastAPI, Response
 from fastapi.responses import PlainTextResponse
 from fastapi.middleware.cors import CORSMiddleware
 from execution.helpers.graph_helpers import detect_in_ports
-from execution.kernel.launcher import CONNECT_FILE_PATH
 import logging
 import base64
+
+from execution.kernel.manager import KernelManager
 from .types import RequestBodyGraph, APIResponses
 
 logger = logging.getLogger()
@@ -22,13 +23,8 @@ app = FastAPI()
 
 import asyncio
 
-import jupyter_client
 from execution.runner import GraphExecutor
 from proto.classes import graph_pb2
-
-client = jupyter_client.BlockingKernelClient()
-client.load_connection_file(str(CONNECT_FILE_PATH))
-client.start_channels()
 
 
 DAGBOOK_PATH = "examples/test_dag.gnote"
@@ -37,7 +33,9 @@ DAGBOOK_PATH = "examples/test_dag.gnote"
 with open(DAGBOOK_PATH, "rb") as f:
     test_graph = graph_pb2.Graph()
     test_graph.ParseFromString(f.read())
-    runner = GraphExecutor(client, test_graph)
+
+    kernel_manager = KernelManager()
+    runner = GraphExecutor(kernel_manager, test_graph)
 
 # Prepare the kernel for execution.
 asyncio.run(runner.initialize())
