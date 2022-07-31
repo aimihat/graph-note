@@ -13,6 +13,7 @@ import "./node.scss";
 import { EdgeType, GraphType, NodeType, SetGraphType } from "../../types";
 import { deserialize_graph } from "../../utils/protobuf_utils";
 import { autoLayout } from "../../utils/graph_utils";
+import { useGraph, useSetGraph } from "../../context/graph_context";
 
 const rfStyle = {
   backgroundColor: "#eee",
@@ -27,7 +28,10 @@ interface FlowProps {
   graph?: GraphType;
 }
 
-function Flow({ graph, setGraph }: FlowProps) {
+function Flow() {
+  const graph = useGraph()
+  const setGraph = useSetGraph()
+
   const onConnect = (params: Connection) => {
     setGraph((prevGraph?: GraphType) => {
       if (prevGraph === undefined) {

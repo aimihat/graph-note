@@ -1,29 +1,30 @@
 import Ansi from "ansi-to-react";
 import Editor from "@monaco-editor/react";
-import { AccessTime, HighlightAltSharp, PrecisionManufacturing } from "@mui/icons-material";
 import {
-  Alert,
-  AlertTitle,
+  HighlightAltSharp,
+} from "@mui/icons-material";
+import {
   Box,
-  Card,
-  CardContent,
   Container,
   Divider,
-  Grid,
-  Paper,
   TextField,
   Typography,
 } from "@mui/material";
 import React, { useEffect, useRef, useState } from "react";
 import { GraphType, NodeType, SetGraphType } from "../../types";
 import { updateNode } from "../../utils/graph_utils";
-import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
+import { useGraph, useSetGraph } from "../../context/graph_context";
 interface NodeEditorProps {
   node?: NodeType;
   setGraph: SetGraphType;
 }
 
-function NodeEditor({ node, setGraph }: NodeEditorProps) {
+function NodeEditor() {
+  const graph = useGraph();
+  const setGraph = useSetGraph();
+  const node = graph?.nodes.find(
+    (node: NodeType) => node.id == graph.selectedCell
+  );
   const [nodeCode, setNodeCode] = useState(node?.data?.code);
 
   useEffect(() => {
@@ -33,22 +34,23 @@ function NodeEditor({ node, setGraph }: NodeEditorProps) {
 
   // No cell selected.
   if (node === undefined) {
-
     return (
       <Typography variant="overline" color="grey">
-      <Box style={{
-        display: 'flex',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        flexDirection: "column",
-        fontSize: "20px",
-        justifyContent:"center",
-        minHeight: "90vh"
-    }}>
-
-        <HighlightAltSharp fontSize="large" sx={{mx: 2}} />Select a cell to edit it
-    </Box>
-    </Typography>
+        <Box
+          style={{
+            display: "flex",
+            alignItems: "center",
+            flexWrap: "wrap",
+            flexDirection: "column",
+            fontSize: "20px",
+            justifyContent: "center",
+            minHeight: "90vh",
+          }}
+        >
+          <HighlightAltSharp fontSize="large" sx={{ mx: 2 }} />
+          Select a cell to edit it
+        </Box>
+      </Typography>
     );
   }
 
