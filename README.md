@@ -1,31 +1,17 @@
-## Graphical Jupyter notebooks / Interactive DAGs / Interactive Airflow
+## Interactive Python DAGs
 
-Sub tagline: Interactive python DAGs (for ML and data pipelines, but could be sample data and send email or call api)
+*WIP repo for building a graph jupyter notebook library.*
 
-#### Problems we’re trying to solve
-- Airflow can run production dags, but hard to develop the dag - edit a single component need to rerun. If you use Jupiter that works, but you lack the dag structure and it’s annoying to have two distinct environments and need to go back and forth.
-- Airflow too slow for toying around bc need to run full pipeline, but structure is nice. Jupiter can run code interactively
-- Everyone uses Jupyter notebooks, and yet the underlying tech hasn’t change in years.
-- Notebook cells can be run in various orders, which is messy. Hard to make sure the current state of runtime variables is as intended.
-- More often ML workflow have specific steps/stages that can be run independently of each other.
-    - Notebook has the advantage that we can run them independently, but this makes it hard to keep track of what has been run & what was the state of the input variable at that time
+High-level description:
 
-#### Our solution
-- Dev notebook style cells, that can use all the outputs… -> convert to cell that uses only the outputs that are used.
-- Cells as graph nodes
-    - Each cell defines input/output variables (e.g. @minput, @output)
-    - Can connect individual inputs/outputs to individual (e.g. Audi software)
-    - A cell knows whether it was run with the current version of its input or if it can be re-run.
-        - Re-run only relevant parts or re-run all.
-- Library of standard cells or tools, e.g. for visualisation.
-- Imports at a root node
+#### Why:
+- Airflow's DAG structure is useful and robust, but unpractical for development &#8594; mainly used for production grade code.
+- Jupyter is great for prototyping but gets messy and error-prone (e.g. need to make sure to run things in the right order).
 
-#### Difference with Orchest
-- Think of it as a DAG Jupyter where nodes are cells, not notebooks
-- Individual outputs surfaced?
-    - Enables library of standard cells, based on standard outputs
+#### What:
+* Combine ideas from airflow & jupyter to make an interactive DAG (alternatively = graphical jupyter).
+* DAG nodes can be edited and executed (like a notebook). Inputs/outputs are inferred from code.
+* Main challenge is the UX. Needs to be as useable as Jupyter, with the benefits of a DAG structure.
 
-#### Useful commands
-
-- Start Graphnote: `python start.py`
-- Run tests: `python -m pytest`
+#### Example DAG:
+![UI Preview](docs/img/preview.png)
