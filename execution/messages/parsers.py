@@ -39,6 +39,8 @@ def parse_message(message: Dict[str, Any]) -> definitions.Message:
     )
 
     raw_message.content = parse_content(raw_message)
+    if raw_message.content:
+        print("Received a message with content-type: ", type(raw_message.content))
 
     return raw_message  # no longer raw
 

@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useEffect } from "react";
 import { Handle, HandleType, Position } from "react-flow-renderer";
 import { DependencyStatus, NodeDataType, PortType } from "../../types";
 

@@ -53,3 +53,9 @@ export enum DependencyStatus {
   UpToDate = 2,
   // @future: consider a state for code being updated?
 }
+
+export enum BusyStatus {
+  NotBusy = 0,
+  BusyRunning = 1,
+  BusySaving = 2,
+}

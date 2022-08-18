@@ -2,6 +2,7 @@ from typing import Dict
 import uuid
 import json
 
+import execution.runner as runner
 import execution.helpers.code_helpers as code_helpers
 from execution.messages import definitions, parsers
 from proto.classes import graph_pb2
@@ -28,7 +29,9 @@ def detect_in_ports(cell: graph_pb2.Cell) -> None:
     )
 
 
-def update_out_ports(executor_state: Dict, cell: graph_pb2.Cell, msg: Dict) -> None:
+def update_out_ports(
+    executor_state: runner.GraphExecutorState, cell: graph_pb2.Cell, msg: Dict
+) -> None:
     """Updates the output ports of a cell after executing it.
 
     After executing a cell we ping the kernel for the latest cell metadata.
@@ -37,14 +40,15 @@ def update_out_ports(executor_state: Dict, cell: graph_pb2.Cell, msg: Dict) -> N
 
     parsed_message = parsers.parse_message(msg)
     if type(parsed_message.content) == definitions.CellStdout:
-        print("received message", parsed_message)
-        prev_metadata = executor_state["out_port_metadata"]
+        if executor_state.cell_exec_success[cell.uid] == False:
+            # Do not update ports if the cell failed to full execute.
+            return
+
+        prev_metadata = executor_state.out_port_metadata
 
         # parse the current port metadata from msg
         meta_str = parsed_message.content.text
         meta_dict = json.loads(meta_str)
-        print("prev meta", prev_metadata)
-        print("loaded metadata", meta_dict)
 
         # compute the diff & update cell output ports (keeping existing)
         detected_outputs = [
@@ -74,7 +78,7 @@ def update_out_ports(executor_state: Dict, cell: graph_pb2.Cell, msg: Dict) -> N
         del cell.out_ports[:]
         cell.out_ports.extend(new_ports)
         # update previous metadata
-        executor_state["out_port_metadata"] = meta_dict
+        executor_state.out_port_metadata = meta_dict
 
 
 def reset_out_ports(graph: graph_pb2.Graph) -> None:
@@ -109,7 +113,6 @@ def validate_cell(dag: graph_pb2.Graph, cell: graph_pb2.Cell) -> ValidationResul
     # Check that the cell inputs have a runtime value
     in_port_uids = [p.uid for p in cell.in_ports]
     port_mapping = graph_port_mapping(dag)
-    print("missing runtime value", dag.connections)
     for c in dag.connections:
         if (
             c.target_uid in in_port_uids

@@ -13,6 +13,7 @@ import "./node.scss";
 import { EdgeType, GraphType, NodeType, SetGraphType } from "../../types";
 import { deserialize_graph } from "../../utils/protobuf_utils";
 import { autoLayout } from "../../utils/graph_utils";
+import { useGraph, useSetGraph } from "../../context/graph_context";
 
 const rfStyle = {
   backgroundColor: "#eee",
@@ -27,7 +28,10 @@ interface FlowProps {
   graph?: GraphType;
 }
 
-function Flow({ graph, setGraph }: FlowProps) {
+function Flow() {
+  const graph = useGraph()
+  const setGraph = useSetGraph()
+
   const onConnect = (params: Connection) => {
     setGraph((prevGraph?: GraphType) => {
       if (prevGraph === undefined) {
@@ -37,7 +41,9 @@ function Flow({ graph, setGraph }: FlowProps) {
       const updatedGraph = { ...prevGraph };
 
       // Delete all other edges connecting to target port:
-      updatedGraph.edges = updatedGraph.edges.filter(e => e.targetHandle != params.targetHandle);
+      updatedGraph.edges = updatedGraph.edges.filter(
+        (e) => e.targetHandle != params.targetHandle
+      );
 
       const newEdge = {
         ...params,
@@ -99,6 +105,15 @@ function Flow({ graph, setGraph }: FlowProps) {
     });
   }
 
+  function deselectNode(_: React.MouseEvent) {
+    setGraph((prevGraph?: GraphType) => {
+      if (prevGraph === undefined) return undefined;
+      const updatedGraph = { ...prevGraph };
+      updatedGraph.selectedCell = undefined;
+      return updatedGraph;
+    });
+  }
+
   useEffect(() => {
     if (reactFlowInstance) {
       reactFlowInstance.fitView();
@@ -106,12 +121,16 @@ function Flow({ graph, setGraph }: FlowProps) {
   }, [graph?.nodes.length]);
 
   useEffect(() => console.log("Graph was updated", graph), [graph]);
+
   return (
     <ReactFlow
-      nodes={graph?.nodes}
+      nodes={graph?.nodes.map((n) => {
+        return { ...n, selected: n.id == graph?.selectedCell };
+      })}
       edges={graph?.edges}
       onConnect={onConnect}
       onEdgesDelete={onEdgesDelete}
+      onPaneClick={deselectNode}
       nodeTypes={nodeTypes}
       style={rfStyle}
       onInit={onInit}
